@@ -38,6 +38,27 @@ public class RoomService {
     }
     
     
+  
+
+    /**
+     * Gets the list index of the room with id
+     * @param id  Which room
+     * @return  index
+     */
+    public int getRoomIndex(long id) {
+  
+        for (int i = 0; i < this.rooms.size(); i++) {
+            if (rooms.get(i).getId() == id) {
+                return i;
+        }
+
+    }
+        return -1;
+        //TODO: Raise exception because room not found!
+    
+    }
+    
+    
     /**
      * Adds the room to service's room list
      * @param number
@@ -83,9 +104,9 @@ public class RoomService {
      * @return Updated room
      */
     public Room updateRoom(long id, Room updatedRoom) {
-        Room room = getRoom(id);
-        room = updatedRoom;
-        return room;
+        int index = getRoomIndex(id);
+        this.rooms.set(index, updatedRoom);
+        return updatedRoom;
     }
     
     
@@ -95,9 +116,9 @@ public class RoomService {
      * @return Updated room
      */
     public Room updateRoom(Room updatedRoom) {
-        Room room = getRoom(updatedRoom.getId());
-        room = updatedRoom;
-        return room;
+        int index = getRoomIndex(updatedRoom.getId());
+        this.rooms.set(index, updatedRoom);
+        return updatedRoom;
     }
     
     

@@ -8,6 +8,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.core.MediaType;
@@ -23,6 +24,7 @@ import SisuBeta.SisuRS.services.RoomService;
  */
 @Path("/rooms")
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class RoomResource {
 
     // Service for handling the heavy lifting
