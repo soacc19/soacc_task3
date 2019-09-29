@@ -15,9 +15,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-
 import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
+
 import SisuBeta.SisuRS.services.RoomService;
 
 /**
@@ -58,8 +58,7 @@ public class RoomResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addRoom(Room newRoom) {
-        
-       Room addedRoom = roomService.addRoom(newRoom);
+        Room addedRoom = roomService.addRoom(newRoom);
         
         return Response.status(Status.CREATED)
                 .entity(addedRoom)
@@ -72,8 +71,8 @@ public class RoomResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom) throws DataNotFoundException{
        
-       updatedRoom.setId(id);
-       Room resultingRoom = roomService.updateRoom(updatedRoom);
+        updatedRoom.setId(id);
+        Room resultingRoom = roomService.updateRoom(updatedRoom);
         
         return Response.status(Status.OK)
                 .entity(resultingRoom)

@@ -11,12 +11,12 @@ import SisuBeta.SisuRS.exceptions.*;
 @Provider       // the annotation preregisters our Mapper for JAX-RS to be used
 public class DataNotFoundExceptionMapper implements ExceptionMapper<DataNotFoundException> {
 
-	@Override
-	public Response toResponse(DataNotFoundException exception) {
-		ErrorMessage errorMessage = new ErrorMessage(exception.getMessage(),
-				 									 Status.NOT_FOUND.getStatusCode(),
-				 								     "http://myDocs.org");
-		return Response.status(Status.NOT_FOUND).entity(errorMessage).build();
-	}
+    @Override
+    public Response toResponse(DataNotFoundException exception) {
+        ErrorMessage errorMessage = new ErrorMessage(exception.getMessage(),
+                                                      Status.NOT_FOUND.getStatusCode(),
+                                                      "http://myDocs.org");
+        return Response.status(Status.NOT_FOUND).entity(errorMessage).build();
+    }
 
 }

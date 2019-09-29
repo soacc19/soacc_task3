@@ -2,8 +2,11 @@
 
 import java.util.ArrayList;
 
+import SisuBeta.SisuRS.classes.Building;
 import SisuBeta.SisuRS.classes.Room;
+import SisuBeta.SisuRS.exceptions.BadInputException;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
+import SisuBeta.SisuRS.other.BuildingMapper;
 
 public class RoomService {
 
@@ -64,6 +67,11 @@ public class RoomService {
      * @return Newly created room
      */
     public Room addRoom(int number, String building, int capacity, String description) {
+        // checking proper values can be maybe withdrawn to separate method
+        if (BuildingMapper.stringToBuilding(building) == Building.UNKNOWN) {
+            throw new BadInputException("Value of 'building' can be only capital letter A-X!", "building", building);
+        }
+        
         long newId = this.nextId++;
         Room room = new Room(newId, number, building, capacity, description);
         this.rooms.add(room);
@@ -77,6 +85,11 @@ public class RoomService {
      * @return Newly added room
      */
     public Room addRoom(Room newRoom) {
+        // checking proper values can be maybe withdrawn to separate method
+        if (BuildingMapper.stringToBuilding(newRoom.getBuilding()) == Building.UNKNOWN) {
+            throw new BadInputException("Value of 'building' can be only capital letter A-X!", "building", newRoom.getBuilding());
+        }
+        
         long newId = this.nextId++;
         newRoom.setId(newId);
         this.rooms.add(newRoom);
@@ -100,6 +113,11 @@ public class RoomService {
      * @return Updated room
      */
     public Room updateRoom(long id, Room updatedRoom) throws DataNotFoundException {
+        // checking proper values can be maybe withdrawn to separate method
+        if (BuildingMapper.stringToBuilding(updatedRoom.getBuilding()) == Building.UNKNOWN) {
+            throw new BadInputException("Value of 'building' can be only capital letter A-X!", "building", updatedRoom.getBuilding());
+        }
+        
         int index = getRoomIndex(id);
         this.rooms.set(index, updatedRoom);
         return updatedRoom;
@@ -112,6 +130,11 @@ public class RoomService {
      * @return Updated room
      */
     public Room updateRoom(Room updatedRoom) throws DataNotFoundException {
+        // checking proper values can be maybe withdrawn to separate method
+        if (BuildingMapper.stringToBuilding(updatedRoom.getBuilding()) == Building.UNKNOWN) {
+            throw new BadInputException("Value of 'building' can be only capital letter A-X!", "building", updatedRoom.getBuilding());
+        }
+        
         int index = getRoomIndex(updatedRoom.getId());
         this.rooms.set(index, updatedRoom);
         return updatedRoom;
