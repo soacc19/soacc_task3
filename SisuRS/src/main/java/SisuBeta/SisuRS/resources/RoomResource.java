@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status;
 
 
 import SisuBeta.SisuRS.classes.Room;
+import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 import SisuBeta.SisuRS.services.RoomService;
 
 /**
@@ -30,11 +31,11 @@ public class RoomResource {
     // Service for handling the heavy lifting
     RoomService roomService = new RoomService();
     
+    //TODO: Reservations-nested resource delegation!
     
     @GET
     public Response getRooms() {
         List<Room> rooms = roomService.getRooms();
-        
         return Response.status(Status.OK)
                 .entity(rooms)
                 .build();
@@ -43,16 +44,9 @@ public class RoomResource {
     
     @GET
     @Path("/{roomId}")
-    public Response getRoom(@PathParam("roomId") long id) {
+    public Response getRoom(@PathParam("roomId") long id) throws DataNotFoundException {
         
-        Room resultRoom;
-        
-        try {
-            resultRoom = roomService.getRoom(id);
-        } catch (Exception e) {
-            // TODO: handle exception 
-            resultRoom = null;
-        }
+        Room resultRoom = roomService.getRoom(id);
        
         return Response.status(Status.OK)
                 .entity(resultRoom)
@@ -76,7 +70,7 @@ public class RoomResource {
     @PUT
     @Path("/{roomId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom) {
+    public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom) throws DataNotFoundException{
        
        updatedRoom.setId(id);
        Room resultingRoom = roomService.updateRoom(updatedRoom);
@@ -91,22 +85,10 @@ public class RoomResource {
     @Path("/{roomId}")
     public Response removeRoom(@PathParam("roomId") long id) {
         
-        try {
-            roomService.removeRoom(id);
-            
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-        
+        roomService.removeRoom(id);
         return Response.status(Status.OK)
                 .build();
     }
-    
-    
-    
-    
-    //TODO: Reservations-nested resource delegation etc.
-    
     
     
 }
