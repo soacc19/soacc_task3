@@ -1,8 +1,11 @@
  package SisuBeta.SisuRS.services;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import SisuBeta.SisuRS.classes.Building;
+import SisuBeta.SisuRS.classes.Reservation;
 import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.exceptions.BadInputException;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
@@ -13,7 +16,15 @@ public class RoomService {
     private ArrayList<Room> rooms = new ArrayList<Room>();
     private int nextId = 1;
     
-    public RoomService() {}
+    public RoomService() {
+     // DEBUG: add rooms
+        Room r1 = addRoom(5, "A", 50, "no desc");
+        r1.addReservation(new Reservation(1, LocalDateTime.now(), LocalDateTime.now()));
+        r1.addReservation(new Reservation());
+        
+        Room r2 = addRoom(10, "B", 150, "no desc");
+        r2.addReservation(new Reservation());
+    }
     
     
     /**
@@ -136,5 +147,89 @@ public class RoomService {
      */
     public void removeRoom(long id) {
         this.rooms.removeIf(x -> x.getId() == id);
+    }
+    
+    
+// ----------------- RESERVATIONS -----------------
+    
+    
+    /**
+     * Get all reservations for a room.
+     * @param roomId
+     * @return
+     */
+    public List<Reservation> getReservations(long roomId) {
+        for (Room room : rooms) {
+            if (room.getId() == roomId) {
+                return room.getReservations();
+            }
+        }
+        throw new BadInputException("The specified room does not exist.","room id", Long.toString(roomId));
+    }
+    
+    
+    /**
+     * Add a reservation to a room using parameters.
+     * @param roomId
+     * @param courseId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public boolean addReservation(long roomId, long courseId, LocalDateTime startTime, LocalDateTime endTime) {
+        return addReservation(roomId, new Reservation(courseId, startTime, endTime));
+    }
+    
+    
+    /**
+     * Add a reservation to a room using a new room object.
+     * @param roomId
+     * @param newReservation
+     * @return
+     */
+    public boolean addReservation(long roomId, Reservation newReservation) {
+        // Validate.
+        if (!newReservation.isValid()) {
+            throw new BadInputException("Reservation is invalid!","reservation","");
+        }
+        
+        for (Room room : rooms) {
+            if (room.getId() == roomId) {
+                return room.addReservation(newReservation);
+            }
+        }
+        throw new BadInputException("Can't add reservation - the specified room does not exist.","room id", Long.toString(roomId));
+    }
+    
+    
+    /**
+     * Update an existing reservation using a reservation object.
+     * @param roomId
+     * @param updatedReservation
+     * @return
+     */
+    public Reservation updateReservation(long roomId, long reservationId, Reservation updatedReservation) {
+        // Validate.
+        if (!updatedReservation.isValid()) {
+            throw new BadInputException("Reservation is invalid!","reservation","");
+        }
+        
+        // Update.
+        return getRoom(roomId).updateReservation(reservationId, updatedReservation);
+    }
+    
+    
+    /**
+     * Remove a reservation from the specified room.
+     * @param roomId
+     * @param reservationId
+     */
+    public void removeReservation(long roomId, long reservationId) {
+        for (Room room : rooms) {
+            if (room.getId() == roomId) {
+                room.removeReservation(reservationId);
+            }
+        }
+        throw new BadInputException("Can't remove reservation - the specified room does not exist.","room id", Long.toString(roomId));
     }
 }
