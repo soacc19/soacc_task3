@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import SisuBeta.SisuRS.classes.Reservation;
 import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 
@@ -33,7 +34,6 @@ public class RoomResource {
     // Service for handling the heavy lifting
     RoomService roomService = new RoomService();
     
-    //TODO: Reservations-nested resource delegation!
     
     @GET
     public Response getRooms() {
@@ -98,5 +98,45 @@ public class RoomResource {
                 .build();
     }
     
+    // ----------------- RESERVATIONS -----------------
     
+    
+    @GET
+    @Path("/{roomId}/reservations")
+    public Response getReservations(@PathParam("roomId") long roomId) throws DataNotFoundException {
+        return Response.status(Status.OK)
+                .entity(roomService.getReservations(roomId))
+                .build();
+        
+    }
+    
+    
+    @POST
+    @Path("/{roomId}/reservations")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addReservation(@PathParam("roomId") long roomId, Reservation newReservation) {
+        return Response.status(Status.CREATED)
+                .entity(roomService.addReservation(roomId, newReservation))
+                .build();   
+    }
+    
+    
+    @PUT
+    @Path("/{roomId}/reservations/{reservationId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId, Reservation updatedReservation) throws DataNotFoundException {
+        updatedReservation.setId(reservationId);
+        return Response.status(Status.OK)
+                .entity(roomService.updateReservation(roomId, reservationId, updatedReservation))
+                .build();   
+    }
+    
+    
+    @DELETE
+    @Path("/{roomId}/reservations/{reservationId}")
+    public Response removeReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId) {
+        roomService.removeReservation(roomId, reservationId);
+        return Response.status(Status.OK)
+                .build();
+    }
 }
