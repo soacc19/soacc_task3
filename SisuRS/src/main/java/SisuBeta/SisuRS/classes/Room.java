@@ -134,7 +134,7 @@ public class Room {
 
     public void addLink(String url, String rel) {
         Link link = new Link();
-        link.setLink(url);
+        link.setHref(url);
         link.setRel(rel);
         links.add(link);
     }

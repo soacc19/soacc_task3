@@ -2,6 +2,7 @@ package SisuBeta.SisuRS.classes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -14,6 +15,7 @@ public class Reservation {
     private LocalDateTime endTime;
     private Object reserver;
     private ArrayList<Long> attendants = new ArrayList<>();
+    private List<Link> links= new ArrayList<>(); // HATEOAS
     
     
     /**
@@ -66,4 +68,18 @@ public class Reservation {
     public ArrayList<Long> getAttendants() { return attendants;  }
     public void setAttendants(ArrayList<Long> attendants) { this.attendants = attendants; }
     public boolean addAttendant(long personId) { return this.attendants.add(personId); }
+    
+    public List<Link> getLinks() {
+        return links;
+       }
+        public void setLinks(List<Link> links) {
+            this.links = links;
+        }
+
+        public void addLink(String url, String rel) {
+            Link link = new Link();
+            link.setHref(url);
+            link.setRel(rel);
+            links.add(link);
+        }
 }

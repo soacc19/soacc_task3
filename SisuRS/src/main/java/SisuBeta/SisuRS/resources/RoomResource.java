@@ -36,8 +36,28 @@ public class RoomResource {
     
     
     @GET
-    public Response getRooms() {
+    public Response getRooms(@Context UriInfo uriInfo) {
         List<Room> rooms = roomService.getRooms();
+        
+        for (Room room : rooms) {
+            // HATEOAS
+            if (room.getLinks().isEmpty()) {
+                String uri = uriInfo.getBaseUriBuilder()
+                        .path(RoomResource.class)
+                        .path(Long.toString(room.getId()))
+                        .build().toString();
+                room.addLink(uri, "self");
+                
+                uri = uriInfo.getBaseUriBuilder()
+                        .path(RoomResource.class)
+                        .path(RoomResource.class, "getReservations")
+                        .resolveTemplate("roomId", room.getId())
+                        .build()
+                        .toString();
+                room.addLink(uri, "reservations");
+            }
+        }
+        
         return Response.status(Status.OK)
                 .entity(rooms)
                 .build();
@@ -46,8 +66,26 @@ public class RoomResource {
     
     @GET
     @Path("/{roomId}")
-    public Response getRoom(@PathParam("roomId") long id) throws DataNotFoundException {
+    public Response getRoom(@PathParam("roomId") long id, @Context UriInfo uriInfo) throws DataNotFoundException {
         Room resultRoom = roomService.getRoom(id);
+        
+        // HATEOAS
+        if (resultRoom.getLinks().isEmpty()) {
+            String uri = uriInfo.getBaseUriBuilder()
+                    .path(RoomResource.class)
+                    .path(Long.toString(resultRoom.getId()))
+                    .build().toString();
+            resultRoom.addLink(uri, "self");
+            
+            uri = uriInfo.getBaseUriBuilder()
+                    .path(RoomResource.class)
+                    .path(RoomResource.class, "getReservations")
+                    .resolveTemplate("roomId", resultRoom.getId())
+                    .build()
+                    .toString();
+            resultRoom.addLink(uri, "reservations");
+        }
+
        
         return Response.status(Status.OK)
                 .entity(resultRoom)
@@ -60,14 +98,24 @@ public class RoomResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addRoom(Room newRoom, @Context UriInfo uriInfo) {
         Room addedRoom = roomService.addRoom(newRoom);
-        // TODO: should it stay in Resource or moved to Service?
-        // HATEOAS
-        String uri = uriInfo.getBaseUriBuilder()
-                .path(RoomResource.class)
-                .path(Long.toString(newRoom.getId()))
-                .build().toString();
         
-        addedRoom.addLink(uri, "self");
+        // HATEOAS
+        if (addedRoom.getLinks().isEmpty()) {
+            String uri = uriInfo.getBaseUriBuilder()
+                    .path(RoomResource.class)
+                    .path(Long.toString(newRoom.getId()))
+                    .build().toString();
+            addedRoom.addLink(uri, "self");
+            
+            uri = uriInfo.getBaseUriBuilder()
+                    .path(RoomResource.class)
+                    .path(RoomResource.class, "getReservations")
+                    .resolveTemplate("roomId", addedRoom.getId())
+                    .build()
+                    .toString();
+            addedRoom.addLink(uri, "reservations");
+        }
+
         
         return Response.status(Status.CREATED)
                 .entity(addedRoom)
@@ -78,10 +126,28 @@ public class RoomResource {
     @PUT
     @Path("/{roomId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom) throws DataNotFoundException{
+    public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom, @Context UriInfo uriInfo) throws DataNotFoundException {
        
         updatedRoom.setId(id);
         Room resultingRoom = roomService.updateRoom(updatedRoom);
+        
+        // HATEOAS
+        if (updatedRoom.getLinks().isEmpty()) {
+            String uri = uriInfo.getBaseUriBuilder()
+                    .path(RoomResource.class)
+                    .path(Long.toString(resultingRoom.getId()))
+                    .build().toString();
+            resultingRoom.addLink(uri, "self");
+            
+            uri = uriInfo.getBaseUriBuilder()
+                    .path(RoomResource.class)
+                    .path(RoomResource.class, "getReservations")
+                    .resolveTemplate("roomId", resultingRoom.getId())
+                    .build()
+                    .toString();
+            resultingRoom.addLink(uri, "reservations");
+        }
+
         
         return Response.status(Status.OK)
                 .entity(resultingRoom)
@@ -92,6 +158,7 @@ public class RoomResource {
     @DELETE
     @Path("/{roomId}")
     public Response removeRoom(@PathParam("roomId") long id) {
+        // No HATEOAS since links are going to be invalid
         
         roomService.removeRoom(id);
         return Response.status(Status.OK)
@@ -103,9 +170,24 @@ public class RoomResource {
     
     @GET
     @Path("/{roomId}/reservations")
-    public Response getReservations(@PathParam("roomId") long roomId) throws DataNotFoundException {
+    public Response getReservations(@PathParam("roomId") long roomId, @Context UriInfo uriInfo) throws DataNotFoundException {
+        List<Reservation> reservations =  roomService.getReservations(roomId);
+        
+        for (Reservation reservation : reservations) {
+            // HATEOAS
+            if (reservation.getLinks().isEmpty()) {
+                String uri = uriInfo.getBaseUriBuilder()
+                        .path(RoomResource.class)
+                        .path(RoomResource.class, "getReservations")
+                        .path(Long.toString(reservation.getId()))
+                        .build()
+                        .toString();
+                reservation.addLink(uri, "self");
+            }
+
+        }
         return Response.status(Status.OK)
-                .entity(roomService.getReservations(roomId))
+                .entity(reservations)
                 .build();
         
     }
@@ -114,7 +196,22 @@ public class RoomResource {
     @POST
     @Path("/{roomId}/reservations")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addReservation(@PathParam("roomId") long roomId, Reservation newReservation) {
+    public Response addReservation(@PathParam("roomId") long roomId, Reservation newReservation, @Context UriInfo uriInfo) {
+        /*
+         * TODO missing ReservationService for proper HATEOAS
+        Reservation newReservation = roomService.addReservation(roomId, newReservation);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(RoomResource.class)
+                .path(RoomResource.class, "getReservations")
+                .path(Long.toString(newReservation.getId()))
+                .build()
+                .toString();
+        newReservation.addLink(uri, "self");
+        // add newReservation to .entity param
+        */
+        
         return Response.status(Status.CREATED)
                 .entity(roomService.addReservation(roomId, newReservation))
                 .build();   
@@ -124,7 +221,24 @@ public class RoomResource {
     @PUT
     @Path("/{roomId}/reservations/{reservationId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId, Reservation updatedReservation) throws DataNotFoundException {
+    public Response updateReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId,
+            Reservation updatedReservation, @Context UriInfo uriInfo) throws DataNotFoundException {
+        
+        /*
+         * TODO missing ReservationService for proper HATEOAS
+        Reservation resultReservation = roomService.updateReservation(roomId, reservationId, updatedReservation);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(RoomResource.class)
+                .path(RoomResource.class, "getReservations")
+                .path(Long.toString(resultReservation.getId()))
+                .build()
+                .toString();
+        resultReservation.addLink(uri, "self");
+        // add resultReservation to .entity param
+        */
+        
         updatedReservation.setId(reservationId);
         return Response.status(Status.OK)
                 .entity(roomService.updateReservation(roomId, reservationId, updatedReservation))
