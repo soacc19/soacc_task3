@@ -37,7 +37,7 @@ public class RoomService {
             }
         }
         // Room was not found so raise an exception
-        throw new DataNotFoundException("Room with id = " + Long.toString(id) +  "not found.");
+        throw new DataNotFoundException("Room with id = " + Long.toString(id) +  " not found.");
     }
   
 
@@ -78,7 +78,6 @@ public class RoomService {
         return room;
     }
 
-
     /**
      * Adds the room to service's room list
      * @param newRoom  The new room to be added
@@ -94,15 +93,6 @@ public class RoomService {
         newRoom.setId(newId);
         this.rooms.add(newRoom);
         return newRoom;
-    }
-    
-    
-    /**
-     * Removes the room with a given id
-     * @param id  Which room to remove
-     */
-    public void removeRoom(long id) {
-       this.rooms.removeIf(x -> x.getId() == id);
     }
     
       
@@ -140,10 +130,11 @@ public class RoomService {
         return updatedRoom;
     }
     
-    
-    
-    
-    
-    
-    
+    /**
+     * Removes the room with a given id
+     * @param id  Which room to remove
+     */
+    public void removeRoom(long id) {
+        this.rooms.removeIf(x -> x.getId() == id);
+    }
 }

@@ -14,11 +14,10 @@ public class Room {
     private int capacity;
     private String description;
     private List<Integer> reservations = new ArrayList<>(); //This is gonna change later when reservations are implemented
+    private List<Link> links= new ArrayList<>(); // HATEOAS
     
     public Room() {}
     
-    
-
     public Room(long id, int number, String building, int capacity, String description) {
         super();
         this.id = id;
@@ -27,8 +26,6 @@ public class Room {
         this.capacity = capacity;
         this.description = description;
     }
-
-
 
     public long getId() {
         return id;
@@ -80,5 +77,19 @@ public class Room {
         this.reservations = reservations;
     }
     
+    public List<Link> getLinks() {
+        return links;
+    }
+    
+    public void setLinks(List<Link> links) {
+        this.links = links;
+    }
+    
+    public void addLink(String url, String rel) {
+        Link link = new Link();
+        link.setLink(url);
+        link.setRel(rel);
+        links.add(link);
+    }
     
 }

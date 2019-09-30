@@ -11,9 +11,11 @@ import javax.ws.rs.Produces;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
@@ -45,7 +47,6 @@ public class RoomResource {
     @GET
     @Path("/{roomId}")
     public Response getRoom(@PathParam("roomId") long id) throws DataNotFoundException {
-        
         Room resultRoom = roomService.getRoom(id);
        
         return Response.status(Status.OK)
@@ -57,12 +58,20 @@ public class RoomResource {
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addRoom(Room newRoom) {
+    public Response addRoom(Room newRoom, @Context UriInfo uriInfo) {
         Room addedRoom = roomService.addRoom(newRoom);
+        // TODO: should it stay in Resource or moved to Service?
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(RoomResource.class)
+                .path(Long.toString(newRoom.getId()))
+                .build().toString();
+        
+        addedRoom.addLink(uri, "self");
         
         return Response.status(Status.CREATED)
                 .entity(addedRoom)
-                .build();   
+                .build();
     }
     
     
