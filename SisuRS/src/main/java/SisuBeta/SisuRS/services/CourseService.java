@@ -1,6 +1,9 @@
  package SisuBeta.SisuRS.services;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import SisuBeta.SisuRS.classes.Course;
 import SisuBeta.SisuRS.exceptions.BadInputException;
@@ -18,6 +21,9 @@ public class CourseService {
     public CourseService() {
     	// DEBUG: test courses.
     	Course c1 = addCourse("Testi1", "T100", "", 2019, 1, 200);
+    	Course c2 = addCourse("Testi2", "T200", "", 2020, 2, 200);
+    	Course c3 = addCourse("Testi3", "T300", "", 2020, 1, 200);
+    	Course c4 = addCourse("Testi4", "T400", "", 2020, 1, 50);
     	c1.addTeacher(100);
     	c1.addStudent(300);
     	c1.addStudent(400);
@@ -30,6 +36,21 @@ public class CourseService {
      */
     public ArrayList<Course> getCourses() {
         return this.courses;
+    }
+    
+    
+    /**
+     * Returns the courses with matching year and period
+     * @param year
+     * @param period
+     * @return course list
+     */
+    public List<Course> getCoursesFiltered(int year, int period) {
+        
+        return this.courses.stream()
+            .filter( x -> year > 0 ? x.getYear() == year : true)
+            .filter( x -> period > 0 ? x.getPeriod() == period : true)
+            .collect(Collectors.toList()); 
     }
     
     

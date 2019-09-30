@@ -6,6 +6,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+
+import java.util.List;
+
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -29,9 +33,15 @@ public class CourseResource {
     CourseService courseService = new CourseService();
     
     @GET
-    public Response getRooms() {
+    public Response getCourses(@QueryParam("year") int year, @QueryParam("period") int period) {
+        List<Course> courses;
+        if (year > 0 || period > 0 ) { courses = courseService.getCoursesFiltered(year, period); }
+        else {
+            courses = courseService.getCourses();            
+        }
+        
         return Response.status(Status.OK)
-                .entity(courseService.getCourses())
+                .entity(courses)
                 .build();
     }
     
