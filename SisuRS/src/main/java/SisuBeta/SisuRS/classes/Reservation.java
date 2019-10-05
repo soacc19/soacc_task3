@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Reservation {
 	private static long uniqueID = 1;
-    private long id = -1; // Unique ID for internal use.
+    private long id; // Unique ID for internal use.
     private long courseId = -1;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -28,20 +28,13 @@ public class Reservation {
     
     public Reservation(long courseId, LocalDateTime startTime, LocalDateTime endTime) {
         super();
-        this.id = uniqueID++;
+        this.id = uniqueID++; // useless
         this.courseId = courseId;
         this.startTime = startTime;
         this.endTime = endTime;
     }
     
     
-    /**
-     * 
-     * @return
-     */
-    public boolean isValid() {
-    	return true;
-    }
 
     
     // ID

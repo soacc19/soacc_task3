@@ -15,15 +15,16 @@ public class RoomService {
 
     private ArrayList<Room> rooms = new ArrayList<Room>();
     private int nextId = 1;
+    private int reservationNextId = 1;
     
     public RoomService() {
      // DEBUG: add rooms
-        Room r1 = addRoom(5, "A", 50, "no desc");
-        r1.addReservation(new Reservation(1, LocalDateTime.now(), LocalDateTime.now()));
-        r1.addReservation(new Reservation());
-        
-        Room r2 = addRoom(10, "B", 150, "no desc");
-        r2.addReservation(new Reservation());
+//        Room r1 = addRoom(5, "A", 50, "no desc");
+//        r1.addReservation(new Reservation(1, LocalDateTime.now(), LocalDateTime.now()));
+//        r1.addReservation(new Reservation());
+//        
+//        Room r2 = addRoom(10, "B", 150, "no desc");
+//        r2.addReservation(new Reservation());
     }
     
     
@@ -167,6 +168,20 @@ public class RoomService {
         throw new BadInputException("The specified room does not exist.","room id", Long.toString(roomId));
     }
     
+    public Reservation getReservation(long roomId, long reservationId) {
+        for (Room room : rooms) {
+            if (room.getId() == roomId) {
+                for (Reservation reservation : room.getReservations()) {
+                    if (reservation.getId() == reservationId) {
+                        return reservation;
+                    }
+                }
+            }
+        }
+        
+        throw new BadInputException("The specified reservation does not exist.","room id", Long.toString(reservationId));
+    }
+    
     
     /**
      * Add a reservation to a room using parameters.
@@ -176,7 +191,8 @@ public class RoomService {
      * @param endTime
      * @return
      */
-    public boolean addReservation(long roomId, long courseId, LocalDateTime startTime, LocalDateTime endTime) {
+    public Reservation addReservation(long roomId, long courseId, LocalDateTime startTime, LocalDateTime endTime) {
+        
         return addReservation(roomId, new Reservation(courseId, startTime, endTime));
     }
     
@@ -187,14 +203,11 @@ public class RoomService {
      * @param newReservation
      * @return
      */
-    public boolean addReservation(long roomId, Reservation newReservation) {
-        // Validate.
-        if (!newReservation.isValid()) {
-            throw new BadInputException("Reservation is invalid!","reservation","");
-        }
+    public Reservation addReservation(long roomId, Reservation newReservation) {
         
         for (Room room : rooms) {
             if (room.getId() == roomId) {
+                newReservation.setId(reservationNextId++);
                 return room.addReservation(newReservation);
             }
         }
@@ -209,10 +222,6 @@ public class RoomService {
      * @return
      */
     public Reservation updateReservation(long roomId, long reservationId, Reservation updatedReservation) {
-        // Validate.
-        if (!updatedReservation.isValid()) {
-            throw new BadInputException("Reservation is invalid!","reservation","");
-        }
         
         // Update.
         return getRoom(roomId).updateReservation(reservationId, updatedReservation);

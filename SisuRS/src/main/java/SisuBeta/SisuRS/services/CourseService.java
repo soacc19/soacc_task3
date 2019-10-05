@@ -5,28 +5,36 @@ import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletContext;
+
 import SisuBeta.SisuRS.classes.Course;
+import SisuBeta.SisuRS.classes.Person;
+import SisuBeta.SisuRS.classes.PersonRole;
+import SisuBeta.SisuRS.db.DbHandler;
 import SisuBeta.SisuRS.exceptions.BadInputException;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
+import SisuBeta.SisuRS.other.PersonRoleMapper;
 
 public class CourseService {
-
-    private ArrayList<Course> courses = new ArrayList<Course>();
-    private int nextId = 1;
-    
+    private List<Course> courses = new ArrayList<Course>();
+    private List<Person> persons = new ArrayList<Person>();
+    private long nextId = 1;
+    private DbHandler dbHandler = new DbHandler();
     
     /**
      * Default constructor.
      */
     public CourseService() {
-    	// DEBUG: test courses.
-    	Course c1 = addCourse("Testi1", "T100", "", 2019, 1, 200);
-    	Course c2 = addCourse("Testi2", "T200", "", 2020, 2, 200);
-    	Course c3 = addCourse("Testi3", "T300", "", 2020, 1, 200);
-    	Course c4 = addCourse("Testi4", "T400", "", 2020, 1, 50);
-    	c1.addTeacher(100);
-    	c1.addStudent(300);
-    	c1.addStudent(400);
+    }
+    
+    public void fillData() {
+        courses = dbHandler.selectAllCourses();
+        persons = dbHandler.selectAllPersons();
+        
+        for (Course course : courses) {
+            fillCourseWithStudents(course.getId());
+            fillCourseWithTeachers(course.getId());
+        }
     }
     
     
@@ -34,7 +42,7 @@ public class CourseService {
      * Returns all courses.
      * @return
      */
-    public ArrayList<Course> getCourses() {
+    public List<Course> getCourses() {
         return this.courses;
     }
     
@@ -78,7 +86,7 @@ public class CourseService {
      * @throws DataNotFoundException
      */
     public int getCourseIndex(long id) throws DataNotFoundException {
-    	for (int i = 0; i < this.courses.size(); i++) {
+        for (int i = 0; i < this.courses.size(); i++) {
             if (courses.get(i).getId() == id) {
                 return i;
             }
@@ -99,7 +107,7 @@ public class CourseService {
      * @return The added course object.
      */
     public Course addCourse(String name, String code, String description, int year, int period, int capacity) {
-    	return addCourse(new Course(-1, name, code, description, year, period, capacity));
+        return addCourse(new Course(-1, name, code, description, year, period, capacity));
     }
 
 
@@ -110,18 +118,37 @@ public class CourseService {
      * @throws BadInputException
      */
     public Course addCourse(Course newCourse) throws BadInputException {
-        // Validate.
-    	if (!newCourse.isValid()) {
-    		throw new BadInputException("Course is invalid!","course","");
-    	}
-    	
-    	// Add.
-        long newId = this.nextId++;
-        newCourse.setId(newId);
+        // Validate
+        
+        // Add to DB
+        long highestIdInTable = dbHandler.selectHighestIdFromTable("Course");
+        if (this.nextId <= highestIdInTable) {
+            this.nextId = highestIdInTable + 1;
+        }
+        dbHandler.insertOrDeleteCourse("insert", newCourse, this.nextId);
+        
+        // create and insert students
+        if (!newCourse.getStudents().isEmpty()) {
+            dbHandler.createOrDropCourseStudentsTeachersTable("create", this.nextId, PersonRoleMapper.personRoleToString(PersonRole.STUDENT));
+            for (long studentId : newCourse.getStudents()) {
+                dbHandler.insertOrDeleteCourseStudentTeacher("insert", PersonRoleMapper.personRoleToString(PersonRole.STUDENT), this.nextId, studentId, false);
+            }
+        }
+        // create and insert teachers
+        if (!newCourse.getTeachers().isEmpty()) {
+            dbHandler.createOrDropCourseStudentsTeachersTable("create", this.nextId, PersonRoleMapper.personRoleToString(PersonRole.TEACHER));
+            for (long teacherId : newCourse.getTeachers()) {
+                dbHandler.insertOrDeleteCourseStudentTeacher("insert", PersonRoleMapper.personRoleToString(PersonRole.TEACHER), this.nextId, teacherId, false);
+            }
+        }
+        
+
+        // Add locally
+        newCourse.setId(this.nextId++);
         this.courses.add(newCourse);
+        
         return newCourse;
     }
-    
     
     /**
      * Removes any courses with the specified ID.
@@ -129,8 +156,12 @@ public class CourseService {
      * @throws DataNotFoundException
      */
     public void removeCourse(long id) throws DataNotFoundException {
+        dbHandler.insertOrDeleteCourse("delete", null, id);
+        dbHandler.createOrDropCourseStudentsTeachersTable("drop", id, PersonRoleMapper.personRoleToString(PersonRole.STUDENT));
+        dbHandler.createOrDropCourseStudentsTeachersTable("drop", id, PersonRoleMapper.personRoleToString(PersonRole.TEACHER));
+        
        if (!this.courses.removeIf(x -> x.getId() == id)) {
-    	   throw new DataNotFoundException("Course with id = " + Long.toString(id) +  " not found.");
+           throw new DataNotFoundException("Course with id = " + Long.toString(id) +  " not found.");
        }
     }
     
@@ -143,103 +174,214 @@ public class CourseService {
      * @throws BadInputException
      */
     public Course updateCourse(long id, Course newCourse) throws BadInputException {
-    	// Validate.
-    	if (!newCourse.isValid()) {
-    		throw new BadInputException("Course is invalid!","course","");
-    	}
+        // Validate.
+
+        // Update DB
+        dbHandler.insertOrDeleteCourse("insert", newCourse, id);
         
-    	// Update.
+        dbHandler.insertOrDeleteCourseStudentTeacher("delete", PersonRoleMapper.personRoleToString(PersonRole.STUDENT), id, 0, true);
+        dbHandler.insertOrDeleteCourseStudentTeacher("delete", PersonRoleMapper.personRoleToString(PersonRole.TEACHER), id, 0, true);
+        for (long studentId : newCourse.getStudents()) {
+            dbHandler.insertOrDeleteCourseStudentTeacher("insert", PersonRoleMapper.personRoleToString(PersonRole.STUDENT), id, studentId, false);
+        }
+        for (long teacherId : newCourse.getTeachers()) {
+            
+            dbHandler.insertOrDeleteCourseStudentTeacher("insert", PersonRoleMapper.personRoleToString(PersonRole.TEACHER), id, teacherId, false);
+        }
+        
+        // Update locally
         int index = getCourseIndex(id);
         this.courses.set(index, newCourse);
+        this.courses.get(index).setId(id); // just in case if in update not expected ID was provided
+        
         return newCourse;
     }
     
+//    TODO Since we providing update only by PUT with ID param in URL, this is not useful
+//    /**
+//     * Updates a course with a new course object.
+//     * @param newCourse
+//     * @return The updated course.
+//     * @throws BadInputException
+//     */
+//    public Course updateCourse(Course newCourse) throws BadInputException {
+//    	// Validate.
+//    	if (newCourse.getId() == -1) {
+//    		throw new BadInputException("Course ID is invalid!","course","");
+//    	}
+//    	
+//    	// Update.
+//    	return updateCourse(newCourse.getId(), newCourse);
+//    }
     
-    /**
-     * Updates a course with a new course object.
-     * @param newCourse
-     * @return The updated course.
-     * @throws BadInputException
-     */
-    public Course updateCourse(Course newCourse) throws BadInputException {
-    	// Validate.
-    	if (newCourse.getId() == -1) {
-    		throw new BadInputException("Course ID is invalid!","course","");
-    	}
-    	// Update.
-    	return updateCourse(newCourse.getId(), newCourse);
+    public boolean fillCourseWithStudents(long id) {
+        courses.get(getCourseIndex(id)).setStudents(dbHandler.selectAllCourseStudentsTeachers(id,
+                PersonRoleMapper.personRoleToString(PersonRole.STUDENT)));
+        return true;
+    }
+    
+    public boolean fillCourseWithTeachers(long id) {
+        courses.get(getCourseIndex(id)).setTeachers(dbHandler.selectAllCourseStudentsTeachers(id,
+                PersonRoleMapper.personRoleToString(PersonRole.TEACHER)));
+        return true;
     }
     
     
     // ----------------- TEACHERS -----------------
     
-    
     /**
-     * TODO: This should probably return the actual people, not just their ID. 
-     * Returns the teachers of the specified course.
+     * Gets all the teachers of the course.
      * @param courseId
      * @return
      */
-    public ArrayList<Long> getTeachers(long courseId) {
-    	for (Course course : courses) {
-    		if (course.getId() == courseId) {
-    			return course.getTeachers();
-    		}
-    	}
-    	throw new BadInputException("The specified course does not exist.","course id", Long.toString(courseId));
+    public List<Person> getTeachers(long courseId) {
+        List<Person> returner = new ArrayList<Person>();
+        List<Long> courseTeachers = courses.get(getCourseIndex(courseId)).getTeachers();
+        
+        for (Person person : persons) {
+            for (Long teacher : courseTeachers) {
+                if (teacher == person.getId()) {
+                    returner.add(person);
+                }
+            }
+        }
+        return returner;
+    }
+    
+    /**
+     * Gets specific teacher on the course.
+     * @param courseId
+     * @param teacherId
+     * @return
+     */
+    public Person getTeacher(long courseId, long teacherId) {
+        courses.get(getCourseIndex(courseId)).getTeachers().get(getTeacherIndex(courseId, teacherId));
+        
+        for (Person person : persons) {
+            if (person.getId() == teacherId) {
+                return person;
+            }
+        }
+        
+        throw new DataNotFoundException("Can't get teacher! There is no person with ID " + teacherId);
+    }
+    
+    /**
+     * Gets the list index of the teacher with id
+     * @param id  Which teacher
+     * @return  index
+     */
+    public int getTeacherIndex(long courseId, long teacherId) throws DataNotFoundException {
+        List<Long> teachers = this.courses.get(getCourseIndex(courseId)).getTeachers();
+        for (int i = 0; i < teachers.size(); i++) {
+            if (teachers.get(i) == teacherId) {
+                return i;
+            }
+        }
+        
+        throw new DataNotFoundException("Teacher with id = " + Long.toString(teacherId) +  " not found.");
     }
     
     
     /**
-     * Adds a teacher's id to the specified course.
+     * Adds a teacher to the course using the teacher's personal ID.
      * @param courseId
      * @param teacherId
-     * @return true/false success
+     * @return
      * @throws BadInputException
      */
-    public boolean addTeacher(long courseId, long teacherId) throws BadInputException {
-    	for (Course course : courses) {
-    		if (course.getId() == courseId) {
-    			return course.addTeacher(teacherId);
-    		}
-    	}
-    	throw new BadInputException("Can't add teacher - the specified course does not exist.","course id", Long.toString(courseId));
+    public Person addTeacher(long courseId, long teacherId) throws BadInputException {
+        for (Person person : persons) {
+            if (person.getId() == teacherId) {
+                // check if person is teacher
+                if (!person.getRole().equals(PersonRoleMapper.personRoleToString(PersonRole.TEACHER))) {
+                    throw new BadInputException("Can't add teacher! Person with this ID is not teacher!", "teacherId", Long.toString(teacherId));
+                }
+                
+                courses.get(getCourseIndex(courseId)).addTeacher(teacherId);
+                dbHandler.insertOrDeleteCourseStudentTeacher("insert",
+                        PersonRoleMapper.personRoleToString(PersonRole.TEACHER), courseId, teacherId, false);
+                return person;
+            }
+        }
+        
+        throw new DataNotFoundException("Can't add teacher! There is no person with ID " + teacherId);
     }
     
-    
     /**
-     * Removes a teacher from the specified course using person id.
+     * Removes a teacher from a course using the teacher's personal ID.
      * @param courseId
      * @param teacherId
+     * @return
      */
-    public void removeTeacher(long courseId, long teacherId) {
-    	for (Course course : courses) {
-    		if (course.getId() == courseId) {
-    			course.removeTeacher(teacherId);
-    		}
-    	}
-    	throw new BadInputException("Can't remove teacher - the specified course does not exist.","course id", Long.toString(courseId));
+    public Person removeTeacher(long courseId, long teacherId) {
+        courses.get(getCourseIndex(courseId)).removeTeacher(getTeacherIndex(courseId, teacherId));
+        dbHandler.insertOrDeleteCourseStudentTeacher("delete",
+                PersonRoleMapper.personRoleToString(PersonRole.TEACHER), courseId, teacherId, false);
+
+        for (Person person : persons) {
+            if (person.getId() == teacherId) {
+                return person;
+            }
+        }
+
+        throw new DataNotFoundException("Can't return removed teacher! There is no person with ID " + teacherId);
     }
     
-    
-	// ----------------- STUDENTS -----------------
-    
+    // ----------------- STUDENTS -----------------
     
     /**
-     * TODO: This should probably return the actual people, not just their ID.
      * Gets all the students on the course.
      * @param courseId
      * @return
      */
-    public ArrayList<Long> getStudents(long courseId) {
-    	for (Course course : courses) {
-    		if (course.getId() == courseId) {
-    			return course.getStudents();
-    		}
-    	}
-    	throw new BadInputException("The specified course does not exist.","course id", Long.toString(courseId));
+    public List<Person> getStudents(long courseId) {
+        List<Person> returner = new ArrayList<Person>();
+        List<Long> courseStudents = courses.get(getCourseIndex(courseId)).getStudents();
+        
+        for (Person person : persons) {
+            for (Long student : courseStudents) {
+                if (student == person.getId()) {
+                    returner.add(person);
+                }
+            }
+        }
+        return returner;
     }
     
+    /**
+     * Gets specific student on the course.
+     * @param courseId
+     * @param studentId
+     * @return
+     */
+    public Person getStudent(long courseId, long studentId) {
+        courses.get(getCourseIndex(courseId)).getStudents().get(getStudentIndex(courseId, studentId));
+        
+        for (Person person : persons) {
+            if (person.getId() == studentId) {
+                return person;
+            }
+        }
+        
+        throw new DataNotFoundException("Can't get student! There is no person with ID " + studentId);
+    }
+    
+    /**
+     * Gets the list index of the student with id
+     * @param id  Which student
+     * @return  index
+     */
+    public int getStudentIndex(long courseId, long studentId) throws DataNotFoundException {
+        List<Long> students = this.courses.get(getCourseIndex(courseId)).getStudents();
+        for (int i = 0; i < students.size(); i++) {
+            if (students.get(i) == studentId) {
+                return i;
+            }
+        }
+        
+        throw new DataNotFoundException("Student with id = " + Long.toString(studentId) +  " not found.");
+    }
     
     /**
      * Adds a student to the course using the student's personal ID.
@@ -248,15 +390,24 @@ public class CourseService {
      * @return
      * @throws BadInputException
      */
-    public boolean addStudent(long courseId, long studentId) throws BadInputException {
-    	for (Course course : courses) {
-    		if (course.getId() == courseId) {
-    			return course.addStudent(studentId);
-    		}
-    	}
-    	throw new BadInputException("Can't add student - the specified course does not exist.","course id", Long.toString(courseId));
+    public Person addStudent(long courseId, long studentId) throws BadInputException {
+        for (Person person : persons) {
+            if (person.getId() == studentId) {
+                // check if person is student
+                if (!person.getRole().equals(PersonRoleMapper.personRoleToString(PersonRole.STUDENT))) {
+                    System.out.println("DEBUG: " + person.getRole());
+                    throw new BadInputException("Can't add student! Person with this ID is not student!", "studentId", Long.toString(studentId));
+                }
+                
+                courses.get(getCourseIndex(courseId)).addStudent(studentId);
+                dbHandler.insertOrDeleteCourseStudentTeacher("insert",
+                        PersonRoleMapper.personRoleToString(PersonRole.STUDENT), courseId, studentId, false);
+                return person;
+            }
+        }
+        
+        throw new DataNotFoundException("Can't add student! There is no person with ID " + studentId);
     }
-    
     
     /**
      * Removes a student from a course using the student's personal ID.
@@ -264,12 +415,17 @@ public class CourseService {
      * @param studentId
      * @return
      */
-    public boolean removeStudent(long courseId, long studentId) {
-    	for (Course course : courses) {
-    		if (course.getId() == courseId) {
-    			course.removeStudent(studentId);
-    		}
-    	}
-    	throw new BadInputException("Can't remove student - the specified course does not exist.","course id", Long.toString(courseId));
+    public Person removeStudent(long courseId, long studentId) {
+        courses.get(getCourseIndex(courseId)).removeStudent(getStudentIndex(courseId, studentId));
+        dbHandler.insertOrDeleteCourseStudentTeacher("delete",
+                PersonRoleMapper.personRoleToString(PersonRole.STUDENT), courseId, studentId, false);
+
+        for (Person person : persons) {
+            if (person.getId() == studentId) {
+                return person;
+            }
+        }
+
+        throw new DataNotFoundException("Can't return removed student! There is no person with ID " + studentId);
     }
 }

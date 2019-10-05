@@ -20,12 +20,14 @@ import javax.ws.rs.core.Response.Status;
 import SisuBeta.SisuRS.classes.Person;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 import SisuBeta.SisuRS.services.PersonService;
+import SisuBeta.SisuRS.db.DbHandler;
 
 @Path("/persons")
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
 public class PersonResource {
     PersonService personService = new PersonService();
+    DbHandler dbHandler = new DbHandler();
     
     @GET 
     public Response getPerson() {
@@ -51,7 +53,6 @@ public class PersonResource {
     public Response addPerson(Person newPerson, @Context UriInfo uriInfo) {
         Person addedPerson = personService.addPerson(newPerson);
         
-        // TODO: should it stay in Resource or moved to Service?
         // HATEOAS
         String uri = uriInfo.getBaseUriBuilder()
                 .path(PersonResource.class)

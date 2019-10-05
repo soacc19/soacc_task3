@@ -11,13 +11,17 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 
 import javax.inject.Singleton;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
 import SisuBeta.SisuRS.classes.Course;
+import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.services.CourseService;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 
@@ -33,12 +37,42 @@ public class CourseResource {
     CourseService courseService = new CourseService();
     
     @GET
-    public Response getCourses(@QueryParam("year") int year, @QueryParam("period") int period) {
-        List<Course> courses;
+    public Response getCourses(@QueryParam("year") int year, @QueryParam("period") int period, @Context UriInfo uriInfo) {
+        courseService.fillData();
+        List<Course> courses = null;
         if (year > 0 || period > 0 ) { courses = courseService.getCoursesFiltered(year, period); }
         else {
-            courses = courseService.getCourses();            
+            courses = courseService.getCourses();
         }
+        
+        for (Course course : courses) {
+            // HATEOAS
+            if (course.getLinks().isEmpty()) {
+                String uri = uriInfo.getBaseUriBuilder()
+                        .path(CourseResource.class)
+                        .path(Long.toString(course.getId()))
+                        .build().toString();
+                course.addLink(uri, "self");
+                
+                uri = uriInfo.getBaseUriBuilder()
+                        .path(CourseResource.class)
+                        .path(CourseResource.class, "getTeachers")
+                        .resolveTemplate("courseId", course.getId())
+                        .build()
+                        .toString();
+                course.addLink(uri, "teachers");
+                
+                uri = uriInfo.getBaseUriBuilder()
+                        .path(CourseResource.class)
+                        .path(CourseResource.class, "getStudents")
+                        .resolveTemplate("courseId", course.getId())
+                        .build()
+                        .toString();
+                course.addLink(uri, "students");
+            }
+        }
+        
+
         
         return Response.status(Status.OK)
                 .entity(courses)
@@ -49,6 +83,7 @@ public class CourseResource {
     @GET
     @Path("/{courseId}")
     public Response getCourse(@PathParam("courseId") long id) throws DataNotFoundException {
+        courseService.fillData();
         return Response.status(Status.OK)
                 .entity(courseService.getCourse(id))
                 .build();
@@ -57,9 +92,35 @@ public class CourseResource {
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addCourse(Course newCourse) {
+    public Response addCourse(Course newCourse, @Context UriInfo uriInfo) {
+        courseService.fillData();
+        Course addedCourse = courseService.addCourse(newCourse);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(Long.toString(addedCourse.getId()))
+                .build().toString();
+        addedCourse.addLink(uri, "self");
+        
+        uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(CourseResource.class, "getTeachers")
+                .resolveTemplate("courseId", addedCourse.getId())
+                .build()
+                .toString();
+        addedCourse.addLink(uri, "teachers");
+        
+        uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(CourseResource.class, "getStudents")
+                .resolveTemplate("courseId", addedCourse.getId())
+                .build()
+                .toString();
+        addedCourse.addLink(uri, "students");
+        
         return Response.status(Status.CREATED)
-                .entity(courseService.addCourse(newCourse))
+                .entity(addedCourse)
                 .build();   
     }
     
@@ -67,9 +128,35 @@ public class CourseResource {
     @PUT
     @Path("/{courseId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateCourse(@PathParam("courseId") long id,  Course newCourse) throws DataNotFoundException{
+    public Response updateCourse(@PathParam("courseId") long id,  Course newCourse, @Context UriInfo uriInfo) throws DataNotFoundException{
+        courseService.fillData();
+        Course updatedCourse = courseService.updateCourse(id, newCourse);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(Long.toString(updatedCourse.getId()))
+                .build().toString();
+        updatedCourse.addLink(uri, "self");
+        
+        uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(CourseResource.class, "getTeachers")
+                .resolveTemplate("courseId", updatedCourse.getId())
+                .build()
+                .toString();
+        updatedCourse.addLink(uri, "teachers");
+        
+        uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(CourseResource.class, "getStudents")
+                .resolveTemplate("courseId", updatedCourse.getId())
+                .build()
+                .toString();
+        updatedCourse.addLink(uri, "students");
+        
         return Response.status(Status.OK)
-                .entity(courseService.updateCourse(id, newCourse))
+                .entity(updatedCourse)
                 .build();
     }
     
@@ -77,20 +164,27 @@ public class CourseResource {
     @DELETE
     @Path("/{courseId}")
     public Response removeCourse(@PathParam("courseId") long id) {
-    	courseService.removeCourse(id);
+        courseService.fillData();
+        courseService.removeCourse(id);
         return Response.status(Status.OK)
                 .build();
     }
     
-    
     // Teachers
-
     
     @GET
     @Path("/{courseId}/teachers")
     public Response getTeachers(@PathParam("courseId") long courseId) throws DataNotFoundException {
         return Response.status(Status.OK)
                 .entity(courseService.getTeachers(courseId))
+                .build();
+    }
+    
+    @GET
+    @Path("/{courseId}/teachers/{teacherId}")
+    public Response getTeacher(@PathParam("courseId") long courseId, @PathParam("teacherId") long teacherId) throws DataNotFoundException {
+        return Response.status(Status.OK)
+                .entity(courseService.getTeacher(courseId, teacherId))
                 .build();
     }
     
@@ -132,6 +226,14 @@ public class CourseResource {
     public Response getStudents(@PathParam("courseId") long courseId) throws DataNotFoundException {
         return Response.status(Status.OK)
                 .entity(courseService.getStudents(courseId))
+                .build();
+    }
+    
+    @GET
+    @Path("/{courseId}/students/{studentId}")
+    public Response getStudent(@PathParam("courseId") long courseId, @PathParam("studentId") long studentId) throws DataNotFoundException {
+        return Response.status(Status.OK)
+                .entity(courseService.getStudent(courseId, studentId))
                 .build();
     }
     

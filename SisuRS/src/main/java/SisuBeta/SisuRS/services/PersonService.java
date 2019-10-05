@@ -46,8 +46,8 @@ public class PersonService {
         for (int i = 0; i < this.persons.size(); i++) {
             if (persons.get(i).getId() == id) {
                 return i;
+            }
         }
-    }
         // Person was not found so raise an exception
         throw new DataNotFoundException("Person with id = " + Long.toString(id) +  " not found.");
     }

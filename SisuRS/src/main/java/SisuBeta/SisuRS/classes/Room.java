@@ -92,8 +92,9 @@ public class Room {
     }
 
 
-    public boolean addReservation(Reservation reservation) {
-        return this.reservations.add(reservation);
+    public Reservation addReservation(Reservation reservation) {
+        this.reservations.add(reservation);
+        return reservation;
     }
 
 
@@ -109,7 +110,8 @@ public class Room {
 
 
     public Reservation updateReservation(long reservationId, Reservation updatedReservation) {
-        return reservations.set(getReservationIndex(reservationId), updatedReservation);
+        reservations.set(getReservationIndex(reservationId), updatedReservation);
+        return updatedReservation;
     }
 
 
@@ -130,7 +132,6 @@ public class Room {
     public void setLinks(List<Link> links) {
         this.links = links;
     }
-
 
     public void addLink(String url, String rel) {
         Link link = new Link();
