@@ -28,5 +28,4 @@ public class ErrorMessageDbQuery extends ErrorMessage {
     public void setSqlErrorMessage(String sqlErrorMessage) {
         this.sqlErrorMessage = sqlErrorMessage;
     }
-    
 }

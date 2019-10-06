@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import SisuBeta.SisuRS.classes.Course;
 import SisuBeta.SisuRS.classes.Person;
+import SisuBeta.SisuRS.classes.User;
 import SisuBeta.SisuRS.exceptions.DatabaseQueryException;
 
 public class DbHandler {
@@ -44,6 +45,7 @@ public class DbHandler {
             if ((path = getDbAbsolutePath()) == null) {
                 throw new DatabaseQueryException("Database file not found!", "", "");
             }
+            System.out.println("DEBUG: DB file found. path=" + path);
             
             // create a connection to the database
             conn = DriverManager.getConnection(JDBC_PREFIX + path);
@@ -240,13 +242,79 @@ public class DbHandler {
         }
     }
     
+    // This time is more comfortable query by username, not by ID
+    public List<User> selectUsers(String username, boolean allUsers) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = "SELECT id, username, password, role FROM User";
+        if (!allUsers) {
+            sql += " WHERE username='" + username + "'";
+        }
+        
+        List<User> returner = new ArrayList<User>();
+        ResultSet rs = execQuery(sql);
+        
+        if (rs == null) {
+            throw new DatabaseQueryException("Database query returned null!", "", sql);
+        }
+        
+        // loop through the result set
+        try {
+            while (rs.next()) {
+                User newUser = new User(rs.getInt("id"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("role"));
+                
+                returner.add(newUser);
+            }
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
+        }
+        return returner;
+    }
+    
+    public void insertOrDeleteUser(String operation, User user, long userId) {
+        String sql = null;
+        
+        if (operation.equals("delete")) {
+            sql = "DELETE FROM User WHERE id = ?";
+        }
+        else if (operation.equals("insert")) {
+            sql = "INSERT OR REPLACE INTO User VALUES (?,?,?,?)";
+        }
+        else {
+            return;
+        }
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, userId);
+            if (operation.equals("insert")) {
+                pstmt.setString(2, user.getUsername());
+                pstmt.setString(3, user.getPassword());
+                pstmt.setString(4, user.getRole());
+            }
+
+            pstmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+    }
+    
     public long selectHighestIdFromTable(String table) {
         String sql = "SELECT MAX(id) FROM " + table;
         long returner = 0;
         ResultSet rs = execQuery(sql);
         
         try {
-            returner = rs.getLong(1);
+         // result set is not empty
+            if (rs.isBeforeFirst()) { 
+                returner = rs.getLong(1);
+            }
         }
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
@@ -261,6 +329,7 @@ public class DbHandler {
         return db.lastModified();
     }
     
+    // FIXME not really portable solution, but working for eclipse + tomcat
     private String getDbAbsolutePath() {
         URL resource = getClass().getResource("/");
         String path = resource.getPath();
