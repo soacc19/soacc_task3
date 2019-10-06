@@ -29,7 +29,7 @@ public class PersonResource {
     PersonService personService = new PersonService();
     DbHandler dbHandler = new DbHandler();
     
-    @GET 
+    @GET
     public Response getPerson() {
         List<Person> persons = personService.getPersons();
         

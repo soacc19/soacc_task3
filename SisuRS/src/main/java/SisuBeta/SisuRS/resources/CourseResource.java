@@ -11,7 +11,6 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 
 import javax.inject.Singleton;
-import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.core.Context;
@@ -21,7 +20,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
 import SisuBeta.SisuRS.classes.Course;
-import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.services.CourseService;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 
