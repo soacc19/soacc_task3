@@ -2,6 +2,8 @@ package SisuBeta.SisuRS.resources;
 
 import java.util.List;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Singleton;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Consumes;
@@ -25,11 +27,13 @@ import SisuBeta.SisuRS.db.DbHandler;
 @Path("/persons")
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
+@DenyAll
 public class PersonResource {
     PersonService personService = new PersonService();
     DbHandler dbHandler = new DbHandler();
     
     @GET
+    @RolesAllowed("admin")
     public Response getPerson() {
         List<Person> persons = personService.getPersons();
         
@@ -40,6 +44,7 @@ public class PersonResource {
 
     @GET
     @Path("/{personId}")
+    @RolesAllowed("admin")
     public Response getPerson(@PathParam("personId")long id) throws DataNotFoundException {
         Person person = personService.getPerson(id);
           
@@ -50,6 +55,7 @@ public class PersonResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
     public Response addPerson(Person newPerson, @Context UriInfo uriInfo) {
         Person addedPerson = personService.addPerson(newPerson);
         
@@ -68,6 +74,7 @@ public class PersonResource {
     
     @PUT
     @Path("/{personId}")
+    @RolesAllowed("admin")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updatePerson(@PathParam("personId") long id,  Person updatedPerson) throws DataNotFoundException {
         updatedPerson.setId(id);
@@ -81,6 +88,7 @@ public class PersonResource {
     
     @DELETE
     @Path("/{personId}")
+    @RolesAllowed("admin")
     public Response removePerson(@PathParam("personId") long id) {
         personService.removePerson(id);
         return Response.status(Status.OK)

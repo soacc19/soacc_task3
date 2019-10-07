@@ -61,10 +61,7 @@ public class SecurityFilter implements ContainerRequestFilter{
             requestContext.abortWith(response);
             return;
         }
-        
        
-        //TODO: Check user's role, figure out if class-level auth checks are needed
-
         // BASIC AUTH for token resource
         if ((requestContext.getUriInfo().getPath().equals(TOKEN_URL))) {
             List<String> authHeader = requestContext.getHeaders().get(AUTHORIZATION_HEADER_KEY);
@@ -205,10 +202,6 @@ public class SecurityFilter implements ContainerRequestFilter{
     }
     
     private boolean rolesMatched(User user, List<String> rolesAllowed) {
-        if (rolesAllowed.contains(user.getRole())) {
-            return true;
-        }
-        
-        return false;
+        return rolesAllowed.contains(user.getRole()); 
     }
 }

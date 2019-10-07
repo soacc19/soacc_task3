@@ -8,6 +8,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -30,6 +32,7 @@ import SisuBeta.SisuRS.services.RoomService;
 @Path("/rooms")
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
+@DenyAll
 public class RoomResource {
 
     // Service for handling the heavy lifting
@@ -37,6 +40,7 @@ public class RoomResource {
     DbHandler dbHandler = new DbHandler();
     
     @GET
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getRooms(@Context UriInfo uriInfo) {
         roomService.fillData();
         List<Room> rooms = roomService.getRooms();
@@ -69,6 +73,7 @@ public class RoomResource {
     
     @GET
     @Path("/{roomId}")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getRoom(@PathParam("roomId") long id, @Context UriInfo uriInfo) throws DataNotFoundException {
         roomService.fillData();
         Room resultRoom = roomService.getRoom(id);
@@ -100,6 +105,7 @@ public class RoomResource {
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
     public Response addRoom(Room newRoom, @Context UriInfo uriInfo) {
         roomService.fillData();
         Room addedRoom = roomService.addRoom(newRoom);
@@ -129,6 +135,7 @@ public class RoomResource {
     @PUT
     @Path("/{roomId}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
     public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom, @Context UriInfo uriInfo) throws DataNotFoundException {
         roomService.fillData();
         Room resultingRoom = roomService.updateRoom(id, updatedRoom);
@@ -157,6 +164,7 @@ public class RoomResource {
     
     @DELETE
     @Path("/{roomId}")
+    @RolesAllowed("admin")
     public Response removeRoom(@PathParam("roomId") long id) {
         roomService.fillData();
         
@@ -172,6 +180,7 @@ public class RoomResource {
     
     @GET
     @Path("/{roomId}/reservations")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getReservations(@PathParam("roomId") long roomId, @Context UriInfo uriInfo) throws DataNotFoundException {
         List<Reservation> reservations =  roomService.getReservations(roomId);
         
@@ -196,6 +205,7 @@ public class RoomResource {
     
     @GET
     @Path("/{roomId}/reservations/{reservationId}")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getReservation(@PathParam("roomId") long roomId,  @PathParam("reservationId") long reservationId, @Context UriInfo uriInfo) throws DataNotFoundException {
         Reservation reservation =  roomService.getReservation(roomId, reservationId);
         
@@ -220,6 +230,7 @@ public class RoomResource {
     @POST
     @Path("/{roomId}/reservations")
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"admin", "faculty"})
     public Response addReservation(@PathParam("roomId") long roomId, Reservation newReservation, @Context UriInfo uriInfo) {
 
         Reservation resultReservation = roomService.addReservation(roomId, newReservation);
@@ -243,6 +254,7 @@ public class RoomResource {
     @PUT
     @Path("/{roomId}/reservations/{reservationId}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"admin", "faculty"})
     public Response updateReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId,
             Reservation updatedReservation, @Context UriInfo uriInfo) throws DataNotFoundException {
         
@@ -269,6 +281,7 @@ public class RoomResource {
     
     @DELETE
     @Path("/{roomId}/reservations/{reservationId}")
+    @RolesAllowed("admin")
     public Response removeReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId) {
         roomService.removeReservation(roomId, reservationId);
         return Response.status(Status.OK)

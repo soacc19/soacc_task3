@@ -38,7 +38,7 @@ public class CourseResource {
     CourseService courseService = new CourseService();
     
     @GET
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getCourses(@QueryParam("year") int year, @QueryParam("period") int period, @Context UriInfo uriInfo) {
         courseService.fillData();
         List<Course> courses = null;
@@ -82,7 +82,7 @@ public class CourseResource {
     
     @GET
     @Path("/{courseId}")
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getCourse(@PathParam("courseId") long id, @Context UriInfo uriInfo) throws DataNotFoundException {
         courseService.fillData();
         Course course = courseService.getCourse(id);
@@ -205,7 +205,7 @@ public class CourseResource {
     
     @GET
     @Path("/{courseId}/teachers")
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getTeachers(@PathParam("courseId") long courseId) throws DataNotFoundException {
         return Response.status(Status.OK)
                 .entity(courseService.getTeachers(courseId))
@@ -214,7 +214,7 @@ public class CourseResource {
     
     @GET
     @Path("/{courseId}/teachers/{teacherId}")
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty", "student"})
     public Response getTeacher(@PathParam("courseId") long courseId, @PathParam("teacherId") long teacherId) throws DataNotFoundException {
         return Response.status(Status.OK)
                 .entity(courseService.getTeacher(courseId, teacherId))
@@ -258,7 +258,7 @@ public class CourseResource {
     
     @GET
     @Path("/{courseId}/students")
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty"})
     public Response getStudents(@PathParam("courseId") long courseId) throws DataNotFoundException {
         return Response.status(Status.OK)
                 .entity(courseService.getStudents(courseId))
@@ -267,7 +267,7 @@ public class CourseResource {
     
     @GET
     @Path("/{courseId}/students/{studentId}")
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty"})
     public Response getStudent(@PathParam("courseId") long courseId, @PathParam("studentId") long studentId) throws DataNotFoundException {
         return Response.status(Status.OK)
                 .entity(courseService.getStudent(courseId, studentId))
@@ -278,7 +278,7 @@ public class CourseResource {
     @POST
     @Path("/{courseId}/students")
     @Consumes(MediaType.APPLICATION_JSON)
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty"})
     public Response addStudent(@PathParam("courseId") long courseId, long studentId) {
         return Response.status(Status.CREATED)
                 .entity(courseService.addStudent(courseId, studentId))
@@ -288,7 +288,7 @@ public class CourseResource {
     
     @DELETE
     @Path("/{courseId}/students/{studentId}")
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "faculty"})
     public Response removeStudent(@PathParam("courseId") long courseId, @PathParam("studentId") long studentId) {
     	courseService.removeStudent(courseId, studentId);
         return Response.status(Status.OK)
