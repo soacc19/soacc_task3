@@ -74,8 +74,10 @@ public class UserService {
     public User addUser(User newUser) throws BadInputException {
         // Validate
         if (!(newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.ADMIN))
-                || newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.USER)))) {
-            throw new BadInputException("Value of attribute 'role' has to be 'admin' or 'user'!", "role", newUser.getRole());
+                || newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.FACULTY))
+                        || newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.STUDENT)))) {
+            throw new BadInputException("Value of attribute 'role' has to be either 'admin' or 'faculty' or 'student'!",
+                    "role", newUser.getRole());
         }
         
         // Add to DB
@@ -116,8 +118,10 @@ public class UserService {
     public User updateUser(long id, User newUser) throws BadInputException {
         // Validate.
         if (!(newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.ADMIN))
-                || newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.USER)))) {
-            throw new BadInputException("Value of attribute 'role' has to be 'admin' or 'user'!", "role", newUser.getRole());
+                || newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.FACULTY))
+                        || newUser.getRole().equals(UserRoleMapper.userRoleToString(UserRole.STUDENT)))) {
+            throw new BadInputException("Value of attribute 'role' has to be either 'admin' or 'faculty' or 'student'!",
+                    "role", newUser.getRole());
         }
 
         // Update DB

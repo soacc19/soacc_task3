@@ -8,12 +8,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Reservation {
-	private static long uniqueID = 1;
-    private long id; // Unique ID for internal use.
+    private long id;
     private long courseId = -1;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Object reserver;
     private ArrayList<Long> attendants = new ArrayList<>();
     private List<Link> links= new ArrayList<>(); // HATEOAS
     
@@ -26,16 +24,13 @@ public class Reservation {
     }
     
     
-    public Reservation(long courseId, LocalDateTime startTime, LocalDateTime endTime) {
+    public Reservation(long id, long courseId, LocalDateTime startTime, LocalDateTime endTime) {
         super();
-        this.id = uniqueID++; // useless
+        this.id = id; // useless
         this.courseId = courseId;
         this.startTime = startTime;
         this.endTime = endTime;
     }
-    
-    
-
     
     // ID
     public long getId() { return id; }
@@ -53,10 +48,6 @@ public class Reservation {
     public LocalDateTime getEndTime() { return endTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
     
-	// Reserver
-    public Object getReserver() { return reserver; }
-    public void setReserver(Object reserver) { this.reserver = reserver; }
-    
     // Attendants
     public ArrayList<Long> getAttendants() { return attendants;  }
     public void setAttendants(ArrayList<Long> attendants) { this.attendants = attendants; }
@@ -64,15 +55,16 @@ public class Reservation {
     
     public List<Link> getLinks() {
         return links;
-       }
-        public void setLinks(List<Link> links) {
-            this.links = links;
-        }
+    }
+    
+    public void setLinks(List<Link> links) {
+        this.links = links;
+    }
 
-        public void addLink(String url, String rel) {
-            Link link = new Link();
-            link.setHref(url);
-            link.setRel(rel);
-            links.add(link);
-        }
+    public void addLink(String url, String rel) {
+        Link link = new Link();
+        link.setHref(url);
+        link.setRel(rel);
+        links.add(link);
+    }
 }

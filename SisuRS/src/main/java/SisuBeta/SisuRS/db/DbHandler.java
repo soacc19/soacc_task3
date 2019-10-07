@@ -9,12 +9,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import java.util.ArrayList;
 
 import SisuBeta.SisuRS.classes.Course;
 import SisuBeta.SisuRS.classes.Person;
+import SisuBeta.SisuRS.classes.Reservation;
+import SisuBeta.SisuRS.classes.Room;
 import SisuBeta.SisuRS.classes.User;
 import SisuBeta.SisuRS.exceptions.DatabaseQueryException;
 
@@ -142,6 +147,10 @@ public class DbHandler {
     }
     
     public void insertOrDeleteCourse(String operation, Course course, long courseId) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
         String sql = null;
         
         if (operation.equals("delete")) {
@@ -173,6 +182,10 @@ public class DbHandler {
     }
     
     public void createOrDropCourseStudentsTeachersTable(String operation, long courseId, String role) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
         String sql = null;
         if (operation.equals("create")) {
             sql = "CREATE TABLE IF NOT EXISTS Course_" + courseId + "_" + role + "s (\n"
@@ -197,6 +210,10 @@ public class DbHandler {
     }
     
     public List<Long> selectAllCourseStudentsTeachers(long courseId, String role) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
         String sql = "SELECT id FROM Course_" + courseId + "_" + role + "s";
         List<Long> returner = new ArrayList<Long>();
         ResultSet rs = execQuery(sql);
@@ -216,6 +233,10 @@ public class DbHandler {
     
     public void insertOrDeleteCourseStudentTeacher(String operation, String role,
             long courseId, long studentTeacherId, boolean deleteAllRows) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
         String sql = null;
         
         if (operation.equals("delete")) {
@@ -278,6 +299,10 @@ public class DbHandler {
     }
     
     public void insertOrDeleteUser(String operation, User user, long userId) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
         String sql = null;
         
         if (operation.equals("delete")) {
@@ -305,7 +330,169 @@ public class DbHandler {
         }
     }
     
+    public List<Room> selectAllRooms() {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = "SELECT id, number, building, capacity, description FROM Room";
+        List<Room> returner = new ArrayList<Room>();
+        ResultSet rs = execQuery(sql);
+        
+        if (rs == null) {
+            throw new DatabaseQueryException("Database query returned null!", "", sql);
+        }
+        
+        // loop through the result set
+        try {
+            while (rs.next()) {
+                Room newRoom = new Room(rs.getLong("id"),
+                    rs.getInt("number"),
+                    rs.getString("building"),
+                    rs.getInt("capacity"),
+                    rs.getString("description"));
+                
+                returner.add(newRoom);
+            }
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
+        }
+        return returner;
+    }
+    
+    public void insertOrDeleteRoom(String operation, Room room, long roomId) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = null;
+        
+        if (operation.equals("delete")) {
+            sql = "DELETE FROM Room WHERE id = ?";
+        }
+        else if (operation.equals("insert")) {
+            sql = "INSERT OR REPLACE INTO Room VALUES (?,?,?,?,?,?,?)";
+        }
+        else {
+            return;
+        }
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, roomId);
+            if (operation.equals("insert")) {
+                pstmt.setInt(2, room.getNumber());
+                pstmt.setString(3, room.getBuilding());
+                pstmt.setInt(4, room.getCapacity());
+                pstmt.setString(5, room.getDescription());
+            }
+
+            pstmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+    }
+    
+    public void createOrDropRoomReservationTable(String operation, long roomId) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = null;
+        if (operation.equals("create")) {
+            sql = "CREATE TABLE IF NOT EXISTS Room_" + roomId + "_reservations (\n"
+                    + " id INTEGER NOT NULL UNIQUE PRIMARY KEY,\n"
+                    + " courseId INTEGER,\n"
+                    + " startTime INTEGER,\n"
+                    + " endTime INTEGER,\n"
+                    + " FOREIGN KEY(courseId) REFERENCES Course(id)"
+                    + " );";
+        }
+        else if (operation.equals("drop")) {
+            sql = "DROP TABLE IF EXISTS Room_" + roomId + "reservations";
+        }
+        else {
+            return;
+        }
+
+        try (Statement stmt = conn.createStatement()) {
+            // create a new table
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            throw new DatabaseQueryException("Creation/dropping of table  of room reservations failed!", e.getMessage(), sql);
+        }
+    }
+    
+    public List<Reservation> selectAllRoomReservations(long roomId) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = "SELECT id FROM Room_" + roomId + "reservations";
+        List<Reservation> returner = new ArrayList<Reservation>();
+        ResultSet rs = execQuery(sql);
+        
+        // loop through the result set
+        try {
+            while (rs.next()) {
+                Reservation newReservation = new Reservation(rs.getLong("id"),
+                        rs.getLong("courseId"),
+                        LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("startTime")), ZoneId.systemDefault()),
+                        LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("endTime")), ZoneId.systemDefault()));
+                
+                 returner.add(newReservation);
+            }
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
+        }
+        
+        return returner;
+    }
+    
+    public void insertOrDeleteRoomReservation(String operation, long roomId,
+            Reservation reservation, long reservationId, boolean deleteAllRows) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = null;
+        
+        if (operation.equals("delete")) {
+            sql = "DELETE FROM Room_" + roomId + "_reservations";
+            if (!deleteAllRows) {
+                sql += " WHERE id = ?";
+            }
+        }
+        else if (operation.equals("insert")) {
+            sql = "INSERT OR REPLACE INTO Room_" + roomId + "reservations VALUES (?,?,?,?)";
+        }
+        else {
+            return;
+        }
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            if (!deleteAllRows) {
+                pstmt.setLong(1, reservationId);
+                if (operation.equals("insert")) {
+                    pstmt.setLong(2, reservation.getCourseId());
+                    pstmt.setLong(3, reservation.getStartTime().toEpochSecond(null));
+                    pstmt.setLong(4, reservation.getEndTime().toEpochSecond(null));
+                }
+            }
+            pstmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+    }
+    
     public long selectHighestIdFromTable(String table) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
         String sql = "SELECT MAX(id) FROM " + table;
         long returner = 0;
         ResultSet rs = execQuery(sql);

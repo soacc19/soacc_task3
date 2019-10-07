@@ -38,6 +38,7 @@ public class RoomResource {
     
     @GET
     public Response getRooms(@Context UriInfo uriInfo) {
+        roomService.fillData();
         List<Room> rooms = roomService.getRooms();
         
         for (Room room : rooms) {
@@ -69,6 +70,7 @@ public class RoomResource {
     @GET
     @Path("/{roomId}")
     public Response getRoom(@PathParam("roomId") long id, @Context UriInfo uriInfo) throws DataNotFoundException {
+        roomService.fillData();
         Room resultRoom = roomService.getRoom(id);
         
         // HATEOAS
@@ -99,6 +101,7 @@ public class RoomResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addRoom(Room newRoom, @Context UriInfo uriInfo) {
+        roomService.fillData();
         Room addedRoom = roomService.addRoom(newRoom);
         
         // HATEOAS
@@ -127,9 +130,8 @@ public class RoomResource {
     @Path("/{roomId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateRoom(@PathParam("roomId") long id,  Room updatedRoom, @Context UriInfo uriInfo) throws DataNotFoundException {
-       
-        updatedRoom.setId(id);
-        Room resultingRoom = roomService.updateRoom(updatedRoom);
+        roomService.fillData();
+        Room resultingRoom = roomService.updateRoom(id, updatedRoom);
         
         // HATEOAS
         String uri = uriInfo.getBaseUriBuilder()
@@ -156,6 +158,8 @@ public class RoomResource {
     @DELETE
     @Path("/{roomId}")
     public Response removeRoom(@PathParam("roomId") long id) {
+        roomService.fillData();
+        
         // No HATEOAS since links are going to be invalid
         
         roomService.removeRoom(id);

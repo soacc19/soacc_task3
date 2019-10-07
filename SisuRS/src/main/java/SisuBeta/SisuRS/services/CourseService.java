@@ -174,6 +174,7 @@ public class CourseService {
      */
     public Course updateCourse(long id, Course newCourse) throws BadInputException {
         // Validate.
+        int index = getCourseIndex(id);
 
         // Update DB
         dbHandler.insertOrDeleteCourse("insert", newCourse, id);
@@ -189,7 +190,6 @@ public class CourseService {
         }
         
         // Update locally
-        int index = getCourseIndex(id);
         this.courses.set(index, newCourse);
         this.courses.get(index).setId(id); // just in case if in update not expected ID was provided
         
@@ -254,6 +254,7 @@ public class CourseService {
      * @return
      */
     public Person getTeacher(long courseId, long teacherId) {
+        // Only for checking presence of teacher
         courses.get(getCourseIndex(courseId)).getTeachers().get(getTeacherIndex(courseId, teacherId));
         
         for (Person person : persons) {

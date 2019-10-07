@@ -6,7 +6,8 @@ public class UserRoleMapper {
     public static String userRoleToString(UserRole userRole) {
         switch (userRole) {
             case ADMIN: return "admin";
-            case USER: return "user";
+            case FACULTY: return "faculty";
+            case STUDENT: return "student";
             default: return "unknown";
         }
         
@@ -15,7 +16,8 @@ public class UserRoleMapper {
     public static UserRole stringToUserRole(String userRoleStr) {
         switch (userRoleStr) {
             case "admin": return UserRole.ADMIN;
-            case "user": return UserRole.USER;
+            case "faculty": return UserRole.FACULTY;
+            case "student": return UserRole.STUDENT;
             default: return UserRole.UNKNOWN;
         }
         

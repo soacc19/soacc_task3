@@ -2,6 +2,7 @@ package SisuBeta.SisuRS.classes;
 
 public enum UserRole {
     ADMIN,
-    USER,
+    FACULTY,
+    STUDENT,
     UNKNOWN
 }

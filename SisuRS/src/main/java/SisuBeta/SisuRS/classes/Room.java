@@ -97,30 +97,14 @@ public class Room {
         return reservation;
     }
 
-
-    public int getReservationIndex(long reservationId) throws DataNotFoundException {
-        for (int i = 0; i < reservations.size(); i++) {
-            if (reservations.get(i).getId() == reservationId) {
-                return i;
-            }
-        }
-        // Room was not found so raise an exception
-        throw new DataNotFoundException("Reservation with id = " + Long.toString(reservationId) + " not found.");
-    }
-
-
-    public Reservation updateReservation(long reservationId, Reservation updatedReservation) {
-        reservations.set(getReservationIndex(reservationId), updatedReservation);
+    public Reservation updateReservation(int index, Reservation updatedReservation) {
+        reservations.set(index, updatedReservation);
         return updatedReservation;
     }
 
 
-    public void removeReservation(long reservationId) {
-        for (int i = 0; i < reservations.size(); i++) {
-            if (reservations.get(i).getId() == reservationId) {
-                reservations.remove(i);
-            }
-        }
+    public Reservation removeReservation(int index) {
+        return this.reservations.remove(index);
     }
 
 
