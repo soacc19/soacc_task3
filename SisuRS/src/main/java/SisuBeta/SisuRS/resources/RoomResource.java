@@ -182,6 +182,7 @@ public class RoomResource {
     @Path("/{roomId}/reservations")
     @RolesAllowed({"admin", "faculty", "student"})
     public Response getReservations(@PathParam("roomId") long roomId, @Context UriInfo uriInfo) throws DataNotFoundException {
+        roomService.fillData();
         List<Reservation> reservations =  roomService.getReservations(roomId);
         
         for (Reservation reservation : reservations) {
@@ -207,7 +208,9 @@ public class RoomResource {
     @GET
     @Path("/{roomId}/reservations/{reservationId}")
     @RolesAllowed({"admin", "faculty", "student"})
-    public Response getReservation(@PathParam("roomId") long roomId,  @PathParam("reservationId") long reservationId, @Context UriInfo uriInfo) throws DataNotFoundException {
+    public Response getReservation(@PathParam("roomId") long roomId,  @PathParam("reservationId") long reservationId,
+            @Context UriInfo uriInfo) throws DataNotFoundException {
+        roomService.fillData();
         Reservation reservation =  roomService.getReservation(roomId, reservationId);
         
             // HATEOAS
@@ -234,7 +237,7 @@ public class RoomResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({"admin", "faculty"})
     public Response addReservation(@PathParam("roomId") long roomId, Reservation newReservation, @Context UriInfo uriInfo) {
-
+        roomService.fillData();
         Reservation resultReservation = roomService.addReservation(roomId, newReservation);
         
         // HATEOAS
@@ -260,8 +263,7 @@ public class RoomResource {
     @RolesAllowed({"admin", "faculty"})
     public Response updateReservation(@PathParam("roomId") long roomId, @PathParam("reservationId") long reservationId,
             Reservation updatedReservation, @Context UriInfo uriInfo) throws DataNotFoundException {
-        
-        
+        roomService.fillData();
         Reservation resultReservation = roomService.updateReservation(roomId, reservationId, updatedReservation);
         resultReservation.setId(reservationId);
         

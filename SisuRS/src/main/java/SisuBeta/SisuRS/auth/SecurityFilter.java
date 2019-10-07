@@ -125,16 +125,18 @@ public class SecurityFilter implements ContainerRequestFilter{
                 }
                 catch (InvalidJwtException | MalformedClaimException e) {
                     ErrorMessageToken errorMessage = new ErrorMessageToken("Token verification failed!.",
-                            Status.UNAUTHORIZED.getStatusCode(), "http://myDocs.org", e.getMessage());
+                            Status.UNAUTHORIZED.getStatusCode(), "http://localhost:8080/SisuRS/webapi/token", e.getMessage());
                     Response unauthorizedStatus = Response.status(Response.Status.UNAUTHORIZED).entity(errorMessage).build();
+                    requestContext.setProperty("auth-failed", true);
                     requestContext.abortWith(unauthorizedStatus);
                     return;
                 }
             }
             else {
                 ErrorMessage errorMessage = new ErrorMessage("Missing token in authorization header!",
-                        Status.UNAUTHORIZED.getStatusCode(), "http://myDocs.org");
+                        Status.UNAUTHORIZED.getStatusCode(), "http://localhost:8080/SisuRS/webapi/token");
                 Response unauthorizedStatus = Response.status(Response.Status.UNAUTHORIZED).entity(errorMessage).build();
+                requestContext.setProperty("auth-failed", true);
                 requestContext.abortWith(unauthorizedStatus);
                 return;
             }
@@ -146,8 +148,9 @@ public class SecurityFilter implements ContainerRequestFilter{
             // user was removed from db meanwhile token was exchanged
             if (usersWithMatchedUsername.isEmpty()) {
                 ErrorMessage errorMessage = new ErrorMessage("Invalid token! Provided subject (user) is no more valid!",
-                        Status.UNAUTHORIZED.getStatusCode(), "http://myDocs.org");
+                        Status.UNAUTHORIZED.getStatusCode(), "http://localhost:8080/SisuRS/webapi/token");
                 Response unauthorizedStatus = Response.status(Response.Status.UNAUTHORIZED).entity(errorMessage).build();
+                requestContext.setProperty("auth-failed", true);
                 requestContext.abortWith(unauthorizedStatus);
                 return;
             }

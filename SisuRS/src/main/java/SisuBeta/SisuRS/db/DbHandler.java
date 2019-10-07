@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import java.util.ArrayList;
@@ -471,8 +472,8 @@ public class DbHandler {
             while (rs.next()) {
                 Reservation newReservation = new Reservation((long)rs.getInt("id"),
                         (long)rs.getInt("courseId"),
-                        LocalDateTime.ofInstant(Instant.ofEpochSecond((long)rs.getInt("startTime")), ZoneId.systemDefault()),
-                        LocalDateTime.ofInstant(Instant.ofEpochSecond((long)rs.getInt("endTime")), ZoneId.systemDefault()));
+                        LocalDateTime.ofInstant(Instant.ofEpochSecond((long)rs.getInt("startTime")), ZoneId.ofOffset("UTC", ZoneOffset.UTC)),
+                        LocalDateTime.ofInstant(Instant.ofEpochSecond((long)rs.getInt("endTime")), ZoneId.ofOffset("UTC", ZoneOffset.UTC)));
                 
                  returner.add(newReservation);
             }
@@ -499,7 +500,7 @@ public class DbHandler {
             }
         }
         else if (operation.equals("insert")) {
-            sql = "INSERT OR REPLACE INTO Room_" + roomId + "reservations VALUES (?,?,?,?)";
+            sql = "INSERT OR REPLACE INTO Room_" + roomId + "_reservations VALUES (?,?,?,?)";
         }
         else {
             return;
@@ -510,8 +511,8 @@ public class DbHandler {
                 pstmt.setLong(1, reservationId);
                 if (operation.equals("insert")) {
                     pstmt.setLong(2, reservation.getCourseId());
-                    pstmt.setLong(3, reservation.getStartTime().toEpochSecond(null));
-                    pstmt.setLong(4, reservation.getEndTime().toEpochSecond(null));
+                    pstmt.setLong(3, reservation.getStartTime().toEpochSecond(ZoneOffset.UTC));
+                    pstmt.setLong(4, reservation.getEndTime().toEpochSecond(ZoneOffset.UTC));
                 }
             }
             pstmt.executeUpdate();
