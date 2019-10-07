@@ -113,6 +113,39 @@ public class DbHandler {
         return returner;
     }
     
+    public void insertOrDeletePerson(String operation, Person person, long personId) {
+        if (this.connected == false) {
+            this.conn = connect();
+        }
+        
+        String sql = null;
+        
+        if (operation.equals("delete")) {
+            sql = "DELETE FROM Person WHERE id = ?";
+        }
+        else if (operation.equals("insert")) {
+            sql = "INSERT OR REPLACE INTO Person VALUES (?,?,?,?,?)";
+        }
+        else {
+            return;
+        }
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, personId);
+            if (operation.equals("insert")) {
+                pstmt.setString(2, person.getName());
+                pstmt.setString(3, person.getFaculty());
+                pstmt.setString(4, person.getEmail());
+                pstmt.setString(5, person.getRole());
+            }
+
+            pstmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+    }
+    
     public List<Course> selectAllCourses() {
         if (this.connected == false) {
             this.conn = connect();

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import SisuBeta.SisuRS.exceptions.DataNotFoundException;
-
 @XmlRootElement
 public class Room {
 
@@ -81,11 +79,9 @@ public class Room {
         this.description = description;
     }
 
-
     public List<Reservation> getReservations() {
         return reservations;
     }
-
 
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;

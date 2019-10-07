@@ -103,9 +103,9 @@ public class CourseService {
      * @param capacity
      * @return The added course object.
      */
-    public Course addCourse(String name, String code, String description, int year, int period, int capacity) {
-        return addCourse(new Course(-1, name, code, description, year, period, capacity));
-    }
+//    public Course addCourse(String name, String code, String description, int year, int period, int capacity) {
+//        return addCourse(new Course(-1, name, code, description, year, period, capacity));
+//    }
 
 
     /**

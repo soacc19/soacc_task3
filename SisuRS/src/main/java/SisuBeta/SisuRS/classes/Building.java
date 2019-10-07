@@ -1,8 +1,6 @@
 package SisuBeta.SisuRS.classes;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
-
+//We use rather our enum mappers and exceptions, since XmlEnum can return not really clear type of errors
 //@XmlType(name = "buildingEnum")
 //@XmlEnum
 public enum Building {

@@ -80,17 +80,17 @@ public class RoomService {
      * @param description
      * @return Newly created room
      */
-    public Room addRoom(int number, String building, int capacity, String description) {
-        // Validate
-        if (BuildingMapper.stringToBuilding(building) == Building.UNKNOWN) {
-            throw new BadInputException("Value of 'building' can be only capital letter A-X!", "building", building);
-        }
-        
-        long newId = this.nextId++;
-        Room room = new Room(newId, number, building, capacity, description);
-        this.rooms.add(room);
-        return room;
-    }
+//    public Room addRoom(int number, String building, int capacity, String description) {
+//        // Validate
+//        if (BuildingMapper.stringToBuilding(building) == Building.UNKNOWN) {
+//            throw new BadInputException("Value of 'building' can be only capital letter A-X!", "building", building);
+//        }
+//        
+//        long newId = this.nextId++;
+//        Room room = new Room(newId, number, building, capacity, description);
+//        this.rooms.add(room);
+//        return room;
+//    }
 
     /**
      * Adds the room to service's room list

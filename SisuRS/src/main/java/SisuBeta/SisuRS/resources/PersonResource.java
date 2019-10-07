@@ -22,7 +22,6 @@ import javax.ws.rs.core.Response.Status;
 import SisuBeta.SisuRS.classes.Person;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 import SisuBeta.SisuRS.services.PersonService;
-import SisuBeta.SisuRS.db.DbHandler;
 
 @Path("/persons")
 @Produces(MediaType.APPLICATION_JSON)
@@ -30,12 +29,23 @@ import SisuBeta.SisuRS.db.DbHandler;
 @DenyAll
 public class PersonResource {
     PersonService personService = new PersonService();
-    DbHandler dbHandler = new DbHandler();
     
     @GET
     @RolesAllowed("admin")
-    public Response getPerson() {
+    public Response getPerson(@Context UriInfo uriInfo) {
+        personService.fillData();
         List<Person> persons = personService.getPersons();
+        
+        for (Person person : persons) {
+            // HATEOAS
+            if (person.getLinks().isEmpty()) {
+                String uri = uriInfo.getBaseUriBuilder()
+                        .path(CourseResource.class)
+                        .path(Long.toString(person.getId()))
+                        .build().toString();
+                person.addLink(uri, "self");
+            }
+        }
         
         return Response.status(Status.OK)
                 .entity(persons)
@@ -45,8 +55,20 @@ public class PersonResource {
     @GET
     @Path("/{personId}")
     @RolesAllowed("admin")
-    public Response getPerson(@PathParam("personId")long id) throws DataNotFoundException {
+    public Response getPerson(@PathParam("personId")long id, @Context UriInfo uriInfo) throws DataNotFoundException {
+        personService.fillData();
         Person person = personService.getPerson(id);
+        
+        // HATEOAS
+        if (person.getLinks().isEmpty()) {
+            String uri = uriInfo.getBaseUriBuilder()
+                    .path(PersonResource.class)
+                    .path(Long.toString(person.getId()))
+                    .build().toString();
+            
+            person.addLink(uri, "self");
+        }
+
           
         return Response.status(Status.OK)
                 .entity(person)
@@ -57,6 +79,7 @@ public class PersonResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("admin")
     public Response addPerson(Person newPerson, @Context UriInfo uriInfo) {
+        personService.fillData();
         Person addedPerson = personService.addPerson(newPerson);
         
         // HATEOAS
@@ -76,9 +99,17 @@ public class PersonResource {
     @Path("/{personId}")
     @RolesAllowed("admin")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updatePerson(@PathParam("personId") long id,  Person updatedPerson) throws DataNotFoundException {
-        updatedPerson.setId(id);
-        Person resultingPerson = personService.updatePerson(updatedPerson);
+    public Response updatePerson(@PathParam("personId") long id,  Person updatedPerson, @Context UriInfo uriInfo) throws DataNotFoundException {
+        personService.fillData();
+        Person resultingPerson = personService.updatePerson(id, updatedPerson);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(PersonResource.class)
+                .path(Long.toString(updatedPerson.getId()))
+                .build().toString();
+        
+        updatedPerson.addLink(uri, "self");
         
         return Response.status(Status.OK)
                 .entity(resultingPerson)
@@ -90,6 +121,7 @@ public class PersonResource {
     @Path("/{personId}")
     @RolesAllowed("admin")
     public Response removePerson(@PathParam("personId") long id) {
+        personService.fillData();
         personService.removePerson(id);
         return Response.status(Status.OK)
                 .build();

@@ -22,6 +22,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
 import SisuBeta.SisuRS.classes.Course;
+import SisuBeta.SisuRS.classes.Person;
 import SisuBeta.SisuRS.services.CourseService;
 import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 
@@ -33,7 +34,6 @@ import SisuBeta.SisuRS.exceptions.DataNotFoundException;
 @Singleton
 @DenyAll
 public class CourseResource {
-
     // Service object to handle business logic.
     CourseService courseService = new CourseService();
     
@@ -206,18 +206,45 @@ public class CourseResource {
     @GET
     @Path("/{courseId}/teachers")
     @RolesAllowed({"admin", "faculty", "student"})
-    public Response getTeachers(@PathParam("courseId") long courseId) throws DataNotFoundException {
+    public Response getTeachers(@PathParam("courseId") long courseId, @Context UriInfo uriInfo) throws DataNotFoundException {
+        courseService.fillData();
+        List<Person> teachers = courseService.getTeachers(courseId);
+        
+        for (Person teacher : teachers) {
+            // HATEOAS
+            if (teacher.getLinks().isEmpty()) {
+                String uri = uriInfo.getBaseUriBuilder()
+                        .path(CourseResource.class)
+                        .path(Long.toString(teacher.getId()))
+                        .build().toString();
+                teacher.addLink(uri, "self");
+            }
+        }
+        
         return Response.status(Status.OK)
-                .entity(courseService.getTeachers(courseId))
+                .entity(teachers)
                 .build();
     }
     
     @GET
     @Path("/{courseId}/teachers/{teacherId}")
     @RolesAllowed({"admin", "faculty", "student"})
-    public Response getTeacher(@PathParam("courseId") long courseId, @PathParam("teacherId") long teacherId) throws DataNotFoundException {
+    public Response getTeacher(@PathParam("courseId") long courseId, @PathParam("teacherId") long teacherId,
+            @Context UriInfo uriInfo) throws DataNotFoundException {
+        courseService.fillData();
+        Person teacher = courseService.getTeacher(courseId, teacherId);
+        
+        // HATEOAS
+        if (teacher.getLinks().isEmpty()) {
+            String uri = uriInfo.getBaseUriBuilder()
+                    .path(CourseResource.class)
+                    .path(Long.toString(teacher.getId()))
+                    .build().toString();
+            teacher.addLink(uri, "self");
+        }
+        
         return Response.status(Status.OK)
-                .entity(courseService.getTeacher(courseId, teacherId))
+                .entity(teacher)
                 .build();
     }
     
@@ -226,9 +253,19 @@ public class CourseResource {
     @Path("/{courseId}/teachers")
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("admin")
-    public Response addTeacher(@PathParam("courseId") long courseId, long teacherId) {
+    public Response addTeacher(@PathParam("courseId") long courseId, long teacherId, @Context UriInfo uriInfo) {
+        courseService.fillData();
+        Person addedTeacher = courseService.addTeacher(courseId, teacherId);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(Long.toString(addedTeacher.getId()))
+                .build().toString();
+        addedTeacher.addLink(uri, "self");
+        
         return Response.status(Status.CREATED)
-                .entity(courseService.addTeacher(courseId, teacherId))
+                .entity(addedTeacher)
                 .build();
     }
     
@@ -248,7 +285,8 @@ public class CourseResource {
     @Path("/{courseId}/teachers/{teacherId}")
     @RolesAllowed("admin")
     public Response removeTeacher(@PathParam("courseId") long courseId, @PathParam("teacherId") long teacherId) {
-    	courseService.removeTeacher(courseId, teacherId);
+        courseService.fillData();
+        courseService.removeTeacher(courseId, teacherId);
         return Response.status(Status.OK)
                 .build();
     }
@@ -259,18 +297,45 @@ public class CourseResource {
     @GET
     @Path("/{courseId}/students")
     @RolesAllowed({"admin", "faculty"})
-    public Response getStudents(@PathParam("courseId") long courseId) throws DataNotFoundException {
+    public Response getStudents(@PathParam("courseId") long courseId, @Context UriInfo uriInfo) throws DataNotFoundException {
+        courseService.fillData();
+        List<Person> students = courseService.getStudents(courseId);
+        
+        for (Person student : students) {
+            // HATEOAS
+            if (student.getLinks().isEmpty()) {
+                String uri = uriInfo.getBaseUriBuilder()
+                        .path(CourseResource.class)
+                        .path(Long.toString(student.getId()))
+                        .build().toString();
+                student.addLink(uri, "self");
+            }
+        }
+        
         return Response.status(Status.OK)
-                .entity(courseService.getStudents(courseId))
+                .entity(students)
                 .build();
     }
     
     @GET
     @Path("/{courseId}/students/{studentId}")
     @RolesAllowed({"admin", "faculty"})
-    public Response getStudent(@PathParam("courseId") long courseId, @PathParam("studentId") long studentId) throws DataNotFoundException {
+    public Response getStudent(@PathParam("courseId") long courseId, @PathParam("studentId") long studentId,
+            @Context UriInfo uriInfo) throws DataNotFoundException {
+        courseService.fillData();
+        Person student = courseService.getStudent(courseId, studentId);
+        
+        // HATEOAS
+        if (student.getLinks().isEmpty()) {
+            String uri = uriInfo.getBaseUriBuilder()
+                    .path(CourseResource.class)
+                    .path(Long.toString(student.getId()))
+                    .build().toString();
+            student.addLink(uri, "self");
+        }
+        
         return Response.status(Status.OK)
-                .entity(courseService.getStudent(courseId, studentId))
+                .entity(student)
                 .build();
     }
     
@@ -279,9 +344,19 @@ public class CourseResource {
     @Path("/{courseId}/students")
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({"admin", "faculty"})
-    public Response addStudent(@PathParam("courseId") long courseId, long studentId) {
+    public Response addStudent(@PathParam("courseId") long courseId, long studentId, @Context UriInfo uriInfo) {
+        courseService.fillData();
+        Person addedStudent = courseService.addStudent(courseId, studentId);
+        
+        // HATEOAS
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(CourseResource.class)
+                .path(Long.toString(addedStudent.getId()))
+                .build().toString();
+        addedStudent.addLink(uri, "self");
+        
         return Response.status(Status.CREATED)
-                .entity(courseService.addStudent(courseId, studentId))
+                .entity(addedStudent)
                 .build();
     }
     
@@ -290,7 +365,8 @@ public class CourseResource {
     @Path("/{courseId}/students/{studentId}")
     @RolesAllowed({"admin", "faculty"})
     public Response removeStudent(@PathParam("courseId") long courseId, @PathParam("studentId") long studentId) {
-    	courseService.removeStudent(courseId, studentId);
+        courseService.fillData();
+        courseService.removeStudent(courseId, studentId);
         return Response.status(Status.OK)
                 .build();
     }
