@@ -429,7 +429,7 @@ public class DbHandler {
             this.conn = connect();
         }
         
-        String sql = "SELECT id FROM Room_" + roomId + "reservations";
+        String sql = "SELECT id FROM Room_" + roomId + "_reservations";
         List<Reservation> returner = new ArrayList<Reservation>();
         ResultSet rs = execQuery(sql);
         

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-
 import SisuBeta.SisuRS.classes.Course;
 import SisuBeta.SisuRS.classes.Person;
 import SisuBeta.SisuRS.classes.PersonRole;
