@@ -40,7 +40,7 @@ public class PersonResource {
             // HATEOAS
             if (person.getLinks().isEmpty()) {
                 String uri = uriInfo.getBaseUriBuilder()
-                        .path(CourseResource.class)
+                        .path(PersonResource.class)
                         .path(Long.toString(person.getId()))
                         .build().toString();
                 person.addLink(uri, "self");

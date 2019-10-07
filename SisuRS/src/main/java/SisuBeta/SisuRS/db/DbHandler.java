@@ -254,7 +254,7 @@ public class DbHandler {
         // loop through the result set
         try {
             while (rs.next()) {
-                returner.add(rs.getLong("id"));
+                returner.add((long)rs.getInt("id"));
             }
         }
         catch (SQLException e) {
@@ -379,7 +379,7 @@ public class DbHandler {
         // loop through the result set
         try {
             while (rs.next()) {
-                Room newRoom = new Room(rs.getLong("id"),
+                Room newRoom = new Room((long)rs.getInt("id"),
                     rs.getInt("number"),
                     rs.getString("building"),
                     rs.getInt("capacity"),
@@ -462,17 +462,17 @@ public class DbHandler {
             this.conn = connect();
         }
         
-        String sql = "SELECT id FROM Room_" + roomId + "_reservations";
+        String sql = "SELECT id, courseId, startTime, endTime FROM Room_" + roomId + "_reservations";
         List<Reservation> returner = new ArrayList<Reservation>();
         ResultSet rs = execQuery(sql);
         
         // loop through the result set
         try {
             while (rs.next()) {
-                Reservation newReservation = new Reservation(rs.getLong("id"),
-                        rs.getLong("courseId"),
-                        LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("startTime")), ZoneId.systemDefault()),
-                        LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("endTime")), ZoneId.systemDefault()));
+                Reservation newReservation = new Reservation((long)rs.getInt("id"),
+                        (long)rs.getInt("courseId"),
+                        LocalDateTime.ofInstant(Instant.ofEpochSecond((long)rs.getInt("startTime")), ZoneId.systemDefault()),
+                        LocalDateTime.ofInstant(Instant.ofEpochSecond((long)rs.getInt("endTime")), ZoneId.systemDefault()));
                 
                  returner.add(newReservation);
             }
@@ -533,7 +533,7 @@ public class DbHandler {
         try {
          // result set is not empty
             if (rs.isBeforeFirst()) { 
-                returner = rs.getLong(1);
+                returner = (long)rs.getLong(1);
             }
         }
         catch (SQLException e) {

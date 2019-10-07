@@ -215,7 +215,10 @@ public class CourseResource {
             if (teacher.getLinks().isEmpty()) {
                 String uri = uriInfo.getBaseUriBuilder()
                         .path(CourseResource.class)
+                        .path(CourseResource.class, "getTeachers")
                         .path(Long.toString(teacher.getId()))
+                        .resolveTemplate("courseId", courseId)
+                        .resolveTemplate("teacherId", teacher.getId())
                         .build().toString();
                 teacher.addLink(uri, "self");
             }
@@ -238,10 +241,14 @@ public class CourseResource {
         if (teacher.getLinks().isEmpty()) {
             String uri = uriInfo.getBaseUriBuilder()
                     .path(CourseResource.class)
+                    .path(CourseResource.class, "getTeachers")
                     .path(Long.toString(teacher.getId()))
+                    .resolveTemplate("courseId", courseId)
+                    .resolveTemplate("teacherId", teacherId)
                     .build().toString();
             teacher.addLink(uri, "self");
         }
+        
         
         return Response.status(Status.OK)
                 .entity(teacher)
@@ -260,7 +267,10 @@ public class CourseResource {
         // HATEOAS
         String uri = uriInfo.getBaseUriBuilder()
                 .path(CourseResource.class)
+                .path(CourseResource.class, "getTeachers")
                 .path(Long.toString(addedTeacher.getId()))
+                .resolveTemplate("courseId", courseId)
+                .resolveTemplate("teacherId", addedTeacher.getId())
                 .build().toString();
         addedTeacher.addLink(uri, "self");
         
@@ -306,7 +316,10 @@ public class CourseResource {
             if (student.getLinks().isEmpty()) {
                 String uri = uriInfo.getBaseUriBuilder()
                         .path(CourseResource.class)
+                        .path(CourseResource.class, "getStudents")
                         .path(Long.toString(student.getId()))
+                        .resolveTemplate("courseId", courseId)
+                        .resolveTemplate("studentId", student.getId())
                         .build().toString();
                 student.addLink(uri, "self");
             }
@@ -329,7 +342,10 @@ public class CourseResource {
         if (student.getLinks().isEmpty()) {
             String uri = uriInfo.getBaseUriBuilder()
                     .path(CourseResource.class)
+                    .path(CourseResource.class, "getStudents")
                     .path(Long.toString(student.getId()))
+                    .resolveTemplate("courseId", courseId)
+                    .resolveTemplate("studentId", student.getId())
                     .build().toString();
             student.addLink(uri, "self");
         }
@@ -351,7 +367,10 @@ public class CourseResource {
         // HATEOAS
         String uri = uriInfo.getBaseUriBuilder()
                 .path(CourseResource.class)
+                .path(CourseResource.class, "getStudents")
                 .path(Long.toString(addedStudent.getId()))
+                .resolveTemplate("courseId", courseId)
+                .resolveTemplate("studentId", addedStudent.getId())
                 .build().toString();
         addedStudent.addLink(uri, "self");
         

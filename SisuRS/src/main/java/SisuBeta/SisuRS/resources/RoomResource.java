@@ -192,6 +192,7 @@ public class RoomResource {
                         .path(RoomResource.class, "getReservations")
                         .path(Long.toString(reservation.getId()))
                         .resolveTemplate("roomId", roomId)
+                        .resolveTemplate("reservationId", reservation.getId())
                         .build()
                         .toString();
                 reservation.addLink(uri, "self");
@@ -216,6 +217,7 @@ public class RoomResource {
                         .path(RoomResource.class, "getReservations")
                         .path(Long.toString(reservation.getId()))
                         .resolveTemplate("roomId", roomId)
+                        .resolveTemplate("reservationId", reservation.getId())
                         .build()
                         .toString();
                 reservation.addLink(uri, "self");
@@ -241,6 +243,7 @@ public class RoomResource {
                 .path(RoomResource.class, "getReservations")
                 .path(Long.toString(resultReservation.getId()))
                 .resolveTemplate("roomId", roomId)
+                .resolveTemplate("reservationId", resultReservation.getId())
                 .build()
                 .toString();
         resultReservation.addLink(uri, "self");
