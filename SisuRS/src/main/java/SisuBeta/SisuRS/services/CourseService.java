@@ -125,15 +125,15 @@ public class CourseService {
         dbHandler.insertOrDeleteCourse("insert", newCourse, this.nextId);
         
         // create and insert students
+        dbHandler.createOrDropCourseStudentsTeachersTable("create", this.nextId, PersonRoleMapper.personRoleToString(PersonRole.STUDENT));
         if (!newCourse.getStudents().isEmpty()) {
-            dbHandler.createOrDropCourseStudentsTeachersTable("create", this.nextId, PersonRoleMapper.personRoleToString(PersonRole.STUDENT));
             for (long studentId : newCourse.getStudents()) {
                 dbHandler.insertOrDeleteCourseStudentTeacher("insert", PersonRoleMapper.personRoleToString(PersonRole.STUDENT), this.nextId, studentId, false);
             }
         }
         // create and insert teachers
+        dbHandler.createOrDropCourseStudentsTeachersTable("create", this.nextId, PersonRoleMapper.personRoleToString(PersonRole.TEACHER));
         if (!newCourse.getTeachers().isEmpty()) {
-            dbHandler.createOrDropCourseStudentsTeachersTable("create", this.nextId, PersonRoleMapper.personRoleToString(PersonRole.TEACHER));
             for (long teacherId : newCourse.getTeachers()) {
                 dbHandler.insertOrDeleteCourseStudentTeacher("insert", PersonRoleMapper.personRoleToString(PersonRole.TEACHER), this.nextId, teacherId, false);
             }

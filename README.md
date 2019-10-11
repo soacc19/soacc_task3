@@ -10,3 +10,5 @@ API that can be used to simple course and student management.
 - Maven 3.6.2
 - Jersey 2.29
 - Tomcat 9
+- Maven dependency: sqlite-jdbc 3.27.2.1 (DB)
+- Maven dependency: jose4j 0.6.5 (JWT)

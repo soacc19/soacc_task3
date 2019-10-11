@@ -27,7 +27,7 @@ public class JWTResponseFilter implements ContainerResponseFilter {
             }
         }
 
-        if(authHeaderVal.startsWith(AUTHORIZATION_HEADER_PREFIX_JWT)) {
+        if(authHeaderVal != null && authHeaderVal.startsWith(AUTHORIZATION_HEADER_PREFIX_JWT)) {
             List<Object> jwt = new ArrayList<Object>();
             jwt.add(authHeaderVal.split(" ")[1]);
             responseContext.getHeaders().put("jwt", jwt);

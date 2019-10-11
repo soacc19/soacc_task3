@@ -116,6 +116,15 @@ public class SecurityFilter implements ContainerRequestFilter{
             String authHeaderVal = requestContext.getHeaderString(AUTHORIZATION_HEADER_KEY);
             String usernameInToken = null;
             
+            if (authHeaderVal == null || authHeaderVal.length() == 0) {
+                ErrorMessage errorMessage = new ErrorMessage("Missing authorization header!",
+                        Status.UNAUTHORIZED.getStatusCode(), "http://localhost:8080/SisuRS/webapi/token");
+                Response unauthorizedStatus = Response.status(Response.Status.UNAUTHORIZED).entity(errorMessage).build();
+                requestContext.setProperty("auth-failed", true);
+                requestContext.abortWith(unauthorizedStatus);
+                return;
+            }
+            
             //consume JWT i.e. execute signature validation
             if(authHeaderVal.startsWith(AUTHORIZATION_HEADER_PREFIX_JWT)) {
                 String jwt = authHeaderVal.split(" ")[1];

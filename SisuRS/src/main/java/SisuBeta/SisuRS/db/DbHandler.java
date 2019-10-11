@@ -111,6 +111,11 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
+        
+        close();
         return returner;
     }
     
@@ -128,6 +133,7 @@ public class DbHandler {
             sql = "INSERT OR REPLACE INTO Person VALUES (?,?,?,?,?)";
         }
         else {
+            close();
             return;
         }
         
@@ -144,6 +150,9 @@ public class DbHandler {
         }
         catch (SQLException e) {
             throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -177,6 +186,11 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
+        
+        close();
         return returner;
     }
     
@@ -194,6 +208,7 @@ public class DbHandler {
             sql = "INSERT OR REPLACE INTO Course VALUES (?,?,?,?,?,?,?)";
         }
         else {
+            close();
             return;
         }
         
@@ -213,6 +228,9 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
     }
     
     public void createOrDropCourseStudentsTeachersTable(String operation, long courseId, String role) {
@@ -231,6 +249,7 @@ public class DbHandler {
             sql = "DROP TABLE IF EXISTS Course_" + courseId + "_" + role + "s";
         }
         else {
+            close();
             return;
         }
 
@@ -240,6 +259,9 @@ public class DbHandler {
             stmt.execute(sql);
         } catch (SQLException e) {
             throw new DatabaseQueryException("Creation/dropping of table  of course students/teachers failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -261,7 +283,11 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
         
+        close();
         return returner;
     }
     
@@ -283,6 +309,7 @@ public class DbHandler {
             sql = "INSERT OR REPLACE INTO Course_" + courseId + "_" + role + "s VALUES (?)";
         }
         else {
+            close();
             return;
         }
         
@@ -294,6 +321,9 @@ public class DbHandler {
         }
         catch (SQLException e) {
             throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -329,6 +359,10 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
+        close();
         return returner;
     }
     
@@ -346,6 +380,7 @@ public class DbHandler {
             sql = "INSERT OR REPLACE INTO User VALUES (?,?,?,?)";
         }
         else {
+            close();
             return;
         }
         
@@ -361,6 +396,9 @@ public class DbHandler {
         }
         catch (SQLException e) {
             throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -392,6 +430,11 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
+        
+        close();
         return returner;
     }
     
@@ -409,6 +452,7 @@ public class DbHandler {
             sql = "INSERT OR REPLACE INTO Room VALUES (?,?,?,?,?,?,?)";
         }
         else {
+            close();
             return;
         }
         
@@ -425,6 +469,9 @@ public class DbHandler {
         }
         catch (SQLException e) {
             throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -447,6 +494,7 @@ public class DbHandler {
             sql = "DROP TABLE IF EXISTS Room_" + roomId + "reservations";
         }
         else {
+            close();
             return;
         }
 
@@ -455,6 +503,9 @@ public class DbHandler {
             stmt.execute(sql);
         } catch (SQLException e) {
             throw new DatabaseQueryException("Creation/dropping of table  of room reservations failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -481,7 +532,11 @@ public class DbHandler {
         catch (SQLException e) {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
+        finally {
+            close();
+        }
         
+        close();
         return returner;
     }
     
@@ -503,6 +558,7 @@ public class DbHandler {
             sql = "INSERT OR REPLACE INTO Room_" + roomId + "_reservations VALUES (?,?,?,?)";
         }
         else {
+            close();
             return;
         }
         
@@ -519,6 +575,9 @@ public class DbHandler {
         }
         catch (SQLException e) {
             throw new DatabaseQueryException("Executing SQL update query failed!", e.getMessage(), sql);
+        }
+        finally {
+            close();
         }
     }
     
@@ -541,6 +600,7 @@ public class DbHandler {
             throw new DatabaseQueryException("Reading result of SQL query failed!", e.getMessage(), sql);
         }
         
+        close();
         return returner;
     }
     
@@ -572,6 +632,7 @@ public class DbHandler {
         try {
             if (this.conn != null) {
                 this.conn.close();
+                this.connected = false;
             }
       } catch (SQLException e) {
           throw new DatabaseQueryException("Failed to close database!", e.getMessage(), "");

@@ -110,9 +110,10 @@ public class RoomService {
         }
         dbHandler.insertOrDeleteRoom("insert", newRoom, this.nextId);
         
+        
         // create and insert reservations
+        dbHandler.createOrDropRoomReservationTable("create", this.nextId);
         if (!newRoom.getReservations().isEmpty()) {
-            dbHandler.createOrDropRoomReservationTable("create", this.nextId);
             for (Reservation reservation : newRoom.getReservations()) {
                 dbHandler.insertOrDeleteRoomReservation("insert", this.nextId, reservation, reservation.getId(), false);
             }
